@@ -29,14 +29,19 @@ Two metrics per run, not one:
     those.
 
 Run with:
-    cd rca && python eval.py        # 3 runs/complaint (default)
+    cd rca && python eval.py        # 3 runs/complaint (default), agent.py
     cd rca && python eval.py 5      # 5 runs/complaint
+    AGENT_IMPL=agent_per_category python eval.py   # test the per-category
+                                                    # investigator experiment
+                                                    # instead (see agent_per_category.py)
 """
+import importlib
 import json
+import os
 import sys
 from pathlib import Path
 
-from agent import investigate
+investigate = importlib.import_module(os.environ.get("AGENT_IMPL", "agent")).investigate
 
 DEFAULT_RUNS = 3
 BASE = Path(__file__).parent

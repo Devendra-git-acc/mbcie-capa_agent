@@ -142,6 +142,73 @@ comfortably.
 | Number of agents | 1 | 1 | 1 (+ rare agent-as-tool) |
 | Tool calls | Serial, one at a time | N/A | Parallel where independent |
 
+## Alternative considered: true multi-agent orchestration (one agent per category)
+
+Everything above keeps exactly one agent. There's a genuinely different
+design worth naming, because it directly targets something we actually
+hit, not a hypothetical: **the whack-a-mole problem documented in
+DAY3_STATUS.md**, where strengthening the prompt's Material-detection
+rules broke Equipment-detection, and vice versa, across three rounds of
+prompt edits. That happened because all four categories' detection logic
+lives in ONE shared system prompt, fought over by one model call.
+
+The alternative: give each category its own agent, with its own short,
+non-competing prompt, dispatched by an orchestrator:
+
+```mermaid
+flowchart TD
+    A[Complaint arrives] --> ORCH["Orchestrator Agent 🟦<br/>decomposes + dispatches + synthesizes"]
+
+    ORCH -->|"brief: check for a discrete<br/>downtime cause"| EQ["Equipment Investigator 🟦<br/>own short prompt, own loop<br/>tools: query_downtime only"]
+    ORCH -->|"brief: check for a<br/>trainee-staffed shift"| HU["Human Investigator 🟦<br/>own short prompt, own loop<br/>tools: query_shifts only"]
+    ORCH -->|"brief: check for a<br/>cross-machine pattern"| MA["Material Investigator 🟦<br/>own short prompt, own loop<br/>tools: query_complaints,<br/>query_complaints_by_machine"]
+
+    EQ --> F1["finding: {supports_category: bool,<br/>confidence, supporting_record_ids,<br/>reasoning}"]
+    HU --> F2["finding: {...}"]
+    MA --> F3["finding: {...}"]
+
+    F1 --> SYN["Orchestrator Agent 🟦<br/>synthesizes the 3 findings"]
+    F2 --> SYN
+    F3 --> SYN
+
+    SYN --> CONC[Proposes final conclusion,<br/>citing whichever investigator's IDs]
+    CONC --> VER{"Verifier: do cited IDs match<br/>that investigator's OWN<br/>supporting_record_ids?"}
+    VER -->|valid| OUT[Return conclusion + evidence chain]
+    VER -->|invalid| FAIL[Flag for review]
+
+    style ORCH fill:#cfe8ff,stroke:#2a6fb0,stroke-width:2px
+    style EQ fill:#cfe8ff,stroke:#2a6fb0
+    style HU fill:#cfe8ff,stroke:#2a6fb0
+    style MA fill:#cfe8ff,stroke:#2a6fb0
+    style SYN fill:#cfe8ff,stroke:#2a6fb0,stroke-width:2px
+```
+
+This is genuinely 4 agents (orchestrator + 3 category investigators),
+each making its own LLM call(s). The reasoning-competition problem
+becomes structurally impossible -- there's no shared prompt left to fight
+over, so strengthening the Material investigator's prompt literally
+cannot touch the Equipment investigator's.
+
+**Real costs**: more LLM calls and latency (mitigated by dispatching the
+category investigators in parallel, since they're independent of each
+other); a new failure surface at synthesis (the orchestrator now has to
+weigh 4 reports instead of reading raw tool data itself); each
+investigator needs its own step-cap/retry discipline, not just one.
+
+**Decided against building the 4-separate-agent version for now.** What
+we actually shipped -- one agent, narrow mechanical verification of just
+the one failure mode the eval isolated -- already fixed the regression
+(61.1% -> 72.2%) without the added machinery. The version actually worth
+testing, if the single-shared-prompt problem resurfaces as more
+categories get added: keep ONE reusable investigator implementation
+(same code, same graph-building function) and instantiate it multiple
+times, once per category, each with its own narrow prompt/tool subset --
+same reasoning-isolation benefit as the diagram above, without hand-
+duplicating the agent code four times over. That's the version this
+project actually tries next, on a separate branch, kept apart from the
+single-shared-prompt version so both can be measured against the same
+`eval.py` numbers rather than assumed.
+
 ## Where this project actually stands
 
 6 tools, 3 data sources, 1 agent. The catalog/routing step doesn't exist

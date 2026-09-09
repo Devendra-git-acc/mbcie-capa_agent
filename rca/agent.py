@@ -13,17 +13,18 @@ reads that list straight out. That's what run_single.py serializes.
 """
 import json
 import os
+import re
 from pathlib import Path
 from typing import Literal
 
 from dotenv import load_dotenv
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, START, END, MessagesState
 from langgraph.prebuilt import ToolNode
 
-from tools import ALL_TOOLS
+from tools import ALL_TOOLS, _decode_batch_code
 
 load_dotenv()
 # NOTE: reads provider/key/model env vars directly rather than from
@@ -35,6 +36,8 @@ DATA_DIR = Path(__file__).parent / "data"
 _complaints_by_id = {c["complaint_id"]: c for c in json.loads((DATA_DIR / "complaints.json").read_text())}
 
 MAX_STEPS = 8
+MAX_VERIFICATION_RETRIES = 2  # same discipline as _invoke_forced_conclusion's single retry --
+                              # bounded correction, not an open-ended argument with the model
 
 SYSTEM_PROMPT = """You are a CAPA (Corrective and Preventive Action) investigator at a combined tyre \
 and cycle (bicycle) manufacturing plant. You are given one customer/dealer defect complaint. Your job \
@@ -228,27 +231,124 @@ def build_evidence_chain(messages) -> list[dict]:
     return chain
 
 
+def _extract_conclusion(messages) -> tuple[dict | None, bool]:
+    """Pulls submit_conclusion's args out of the last message, if it's there.
+    Returns (conclusion_or_None, conclusion_failed) -- shared by the initial
+    extraction and every verification-retry extraction below, so both paths
+    agree on what counts as a valid structured conclusion."""
+    last = messages[-1]
+    conclusion = None
+    for tc in getattr(last, "tool_calls", None) or []:
+        if tc["name"] == "submit_conclusion":
+            conclusion = tc["args"]
+    return conclusion, conclusion is None
+
+
+_COMPLAINT_ID_RE = re.compile(r"\bC\d{3}\b")
+
+
+def _verify_material_citation(conclusion: dict, investigated_complaint: dict) -> tuple[bool, str]:
+    """Mechanical check, no LLM involved: when the conclusion is 'Material',
+    do the complaint IDs actually cited in root_cause_hypothesis reference a
+    DIFFERENT machine_id than the complaint under investigation, with a
+    matching defect_description? That's the exact distinction eval_results.json
+    showed the model repeatedly getting wrong (same-machine recurrence mistaken
+    for a cross-machine material pattern) even after three explicit prompt
+    corrections -- so this checks it in code instead of hoping a fourth prompt
+    tweak sticks.
+
+    Deliberately narrow: only Material conclusions are checked (every other
+    category returns valid immediately). This targets the one failure mode
+    the eval actually isolated, not a general-purpose conclusion critic.
+    """
+    if conclusion.get("root_cause_category", "").strip().lower() != "material":
+        return True, ""
+
+    hypothesis = conclusion.get("root_cause_hypothesis", "") or ""
+    cited_ids = set(_COMPLAINT_ID_RE.findall(hypothesis))
+    if not cited_ids:
+        return False, ("Conclusion is 'Material' but root_cause_hypothesis doesn't cite any specific "
+                        "complaint IDs to verify the cross-machine pattern against.")
+
+    own_machine = _decode_batch_code(investigated_complaint["batch_code"])["machine_id"]
+    own_symptom = investigated_complaint["defect_description"]
+
+    same_machine_hits = []
+    for cid in sorted(cited_ids):
+        cited = _complaints_by_id.get(cid)
+        if cited is None:
+            continue
+        cited_machine = _decode_batch_code(cited["batch_code"])["machine_id"]
+        if cited_machine != own_machine and cited["defect_description"] == own_symptom:
+            return True, ""  # genuine cross-machine, matching-symptom citation found
+        if cited_machine == own_machine:
+            same_machine_hits.append(cid)
+
+    if same_machine_hits:
+        return False, (f"Conclusion is 'Material' citing {same_machine_hits}, but those are on the SAME "
+                        f"machine ({own_machine}) as the complaint under investigation -- that's recurrence, "
+                        f"not a cross-machine pattern. Material requires a DIFFERENT machine_id with a "
+                        f"matching defect_description.")
+    return False, (f"Conclusion is 'Material' citing {sorted(cited_ids)}, but none of those complaints "
+                    f"combine a different machine_id than {own_machine} with a matching defect_description.")
+
+
 def investigate(complaint_id: str) -> dict:
     complaint = _complaints_by_id.get(complaint_id)
     if complaint is None:
         raise ValueError(f"Unknown complaint_id: {complaint_id}")
 
-    initial_messages = [
+    messages = [
         SystemMessage(content=SYSTEM_PROMPT),
         HumanMessage(content=f"Investigate this complaint:\n{json.dumps(complaint, indent=2)}"),
     ]
-    final_state = graph.invoke({"messages": initial_messages, "steps": 0},
+    final_state = graph.invoke({"messages": messages, "steps": 0},
                                 config={"recursion_limit": MAX_STEPS * 2 + 4})
-
     messages = final_state["messages"]
-    evidence_chain = build_evidence_chain(messages)
+    steps_used = final_state.get("steps", 0)
 
-    conclusion = None
-    last = messages[-1]
-    for tc in getattr(last, "tool_calls", None) or []:
-        if tc["name"] == "submit_conclusion":
-            conclusion = tc["args"]
-    conclusion_failed = conclusion is None
+    conclusion, conclusion_failed = _extract_conclusion(messages)
+
+    # Verification retry loop: only ever engages for a "Material" conclusion
+    # that fails the mechanical citation check above. Reuses
+    # _invoke_forced_conclusion (same forced-tool-call mechanism as the
+    # MAX_STEPS path) rather than re-entering the investigation graph --
+    # the diagnosis is a reasoning/weighing problem, not a missing-evidence
+    # one (eval_results.json: evidence_surfaced_rate 100%), so the fix is
+    # "reconsider what you already have," not "go gather more."
+    material_verification_failed = False
+    verification_log = []
+    if not conclusion_failed:
+        is_valid, reason = _verify_material_citation(conclusion, complaint)
+        while not is_valid and len(verification_log) < MAX_VERIFICATION_RETRIES:
+            verification_log.append({"attempt": len(verification_log) + 1,
+                                      "rejected_category": conclusion.get("root_cause_category"),
+                                      "reason": reason})
+            # The OpenAI API requires every tool_call in an assistant message to be
+            # immediately followed by a matching tool response before anything else --
+            # messages[-1] here is the AIMessage carrying the rejected submit_conclusion
+            # call, which the graph never answers (that call is the termination signal,
+            # deliberately excluded from _tool_node). Close it out with a synthetic
+            # ToolMessage before appending the correction, or the next call 400s.
+            last_ai_message = messages[-1]
+            submit_call = next((tc for tc in getattr(last_ai_message, "tool_calls", None) or []
+                                 if tc["name"] == "submit_conclusion"), None)
+            if submit_call is not None:
+                messages = messages + [ToolMessage(
+                    content="Rejected by verification -- see correction note.", tool_call_id=submit_call["id"])]
+            correction = HumanMessage(content=(
+                f"Your conclusion needs correction: {reason} Reconsider the evidence you've already "
+                f"gathered above and call submit_conclusion again with a corrected category."))
+            messages = messages + [correction]
+            response = _invoke_forced_conclusion(messages)
+            messages = messages + [response]
+            conclusion, conclusion_failed = _extract_conclusion(messages)
+            if conclusion_failed:
+                break
+            is_valid, reason = _verify_material_citation(conclusion, complaint)
+        material_verification_failed = (not conclusion_failed) and (not is_valid)
+
+    evidence_chain = build_evidence_chain(messages)
     if conclusion is None:
         # The model failed to produce the forced submit_conclusion tool call
         # (seen on some free-tier OpenRouter models under tool_choice). This
@@ -260,7 +360,7 @@ def investigate(complaint_id: str) -> dict:
                       "root_cause_hypothesis": "Agent did not reach a structured conclusion.",
                       "confidence": "low",
                       "recommended_corrective_action": "Re-run or investigate manually.",
-                      "raw_final_message": getattr(last, "content", None)}
+                      "raw_final_message": getattr(messages[-1], "content", None)}
 
     return {
         "complaint_id": complaint_id,
@@ -268,5 +368,7 @@ def investigate(complaint_id: str) -> dict:
         "evidence_chain": evidence_chain,
         "conclusion": conclusion,
         "conclusion_failed": conclusion_failed,
-        "steps_used": final_state.get("steps", 0),
+        "material_verification_failed": material_verification_failed,
+        "verification_log": verification_log,
+        "steps_used": steps_used,
     }

@@ -60,11 +60,19 @@ def evaluate_complaint(complaint_id: str, truth: dict, n_runs: int) -> list[dict
         result = investigate(complaint_id)
         conclusion = result["conclusion"]
         failed = result.get("conclusion_failed", False)
+        verification_failed = result.get("material_verification_failed", False)
         category = conclusion.get("root_cause_category")
-        match = (not failed) and bool(category) and category.lower() == truth["root_cause_category"].lower()
+        # Same discipline as conclusion_failed: a Material conclusion that never
+        # passed the mechanical citation check (i.e. survived MAX_VERIFICATION_RETRIES
+        # corrections and STILL doesn't hold up) must never count as a hit, even if
+        # the category string happens to equal ground truth.
+        match = ((not failed) and (not verification_failed) and bool(category)
+                  and category.lower() == truth["root_cause_category"].lower())
         runs.append({
             "run": i + 1,
             "conclusion_failed": failed,
+            "material_verification_failed": verification_failed,
+            "verification_retries_used": len(result.get("verification_log", [])),
             "predicted_category": category,
             "category_match": match,
             "evidence_surfaced": evidence_was_surfaced(result["evidence_chain"], truth),
@@ -83,6 +91,8 @@ def main():
     total_runs = 0
     total_matches = 0
     total_failed = 0
+    total_verification_failed = 0
+    total_verification_retries = 0
     evidence_checks = []
 
     for cid, truth in answer_key.items():
@@ -102,8 +112,14 @@ def main():
         total_runs += n_runs
         total_matches += matches
         total_failed += failed
+        total_verification_failed += sum(1 for r in runs if r["material_verification_failed"])
+        total_verification_retries += sum(r["verification_retries_used"] for r in runs)
         evidence_checks += [r["evidence_surfaced"] for r in runs if r["evidence_surfaced"] is not None]
-        print(f"  {cid}: {matches}/{n_runs} correct, {failed}/{n_runs} conclusion_failed")
+        vf = sum(1 for r in runs if r["material_verification_failed"])
+        vr = sum(r["verification_retries_used"] for r in runs)
+        extra = f", {vr} verification retr{'y' if vr == 1 else 'ies'}" if vr else ""
+        print(f"  {cid}: {matches}/{n_runs} correct, {failed}/{n_runs} conclusion_failed{extra}"
+              + (f", {vf}/{n_runs} still-invalid Material after retries" if vf else ""))
 
     summary = {
         "n_runs_per_complaint": n_runs,
@@ -111,6 +127,8 @@ def main():
         "total_investigations": total_runs,
         "overall_hit_rate": round(total_matches / total_runs, 3),
         "conclusion_failed_rate": round(total_failed / total_runs, 3),
+        "material_verification_failed_rate": round(total_verification_failed / total_runs, 3),
+        "total_verification_retries_used": total_verification_retries,
         "evidence_surfaced_rate": round(sum(evidence_checks) / len(evidence_checks), 3) if evidence_checks else None,
         "per_category_hit_rate": {cat: round(per_category_matches[cat] / per_category_totals[cat], 3)
                                    for cat in per_category_totals},
@@ -122,6 +140,8 @@ def main():
     print(f"Overall hit rate: {summary['overall_hit_rate']:.1%}  "
           f"({total_matches}/{total_runs} investigations)")
     print(f"conclusion_failed rate: {summary['conclusion_failed_rate']:.1%}")
+    print(f"material_verification_failed rate: {summary['material_verification_failed_rate']:.1%}  "
+          f"({summary['total_verification_retries_used']} correction attempts made in total)")
     if summary["evidence_surfaced_rate"] is not None:
         print(f"Evidence surfaced rate (storylines with concrete record IDs): "
               f"{summary['evidence_surfaced_rate']:.1%}")

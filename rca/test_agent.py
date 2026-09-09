@@ -11,7 +11,7 @@ Run with:
 """
 from unittest.mock import patch
 
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langgraph.graph import END
 
 import agent
@@ -97,10 +97,109 @@ def test_call_agent_forces_conclusion_when_investigating_model_narrates_instead_
           "correctly forces a real submit_conclusion call rather than ending the investigation")
 
 
+def test_verify_material_citation_ignores_non_material_categories():
+    conclusion = {"root_cause_category": "Equipment", "root_cause_hypothesis": "whatever, not checked here"}
+    is_valid, reason = agent._verify_material_citation(
+        conclusion, {"batch_code": "M02-2026W13", "defect_description": "x"})
+    assert is_valid and reason == ""
+    print("_verify_material_citation: non-Material categories pass through unchecked")
+
+
+def test_verify_material_citation_accepts_genuine_cross_machine_match():
+    """C008 (M01) and C010 (M03) are the real Material storyline -- different
+    machines, byte-identical defect_description. This is what a CORRECT
+    Material citation looks like, and it must still pass."""
+    investigated = agent._complaints_by_id["C008"]
+    conclusion = {"root_cause_category": "Material",
+                  "root_cause_hypothesis": "Cross-machine pattern: C010 is on a different machine and shares "
+                                            "the exact same symptom."}
+    is_valid, reason = agent._verify_material_citation(conclusion, investigated)
+    assert is_valid, f"expected a genuine cross-machine citation to pass, got rejected: {reason}"
+    print("_verify_material_citation: accepts a real cross-machine, matching-symptom citation (C008 citing C010)")
+
+
+def test_verify_material_citation_rejects_same_machine_recurrence():
+    """The exact failure mode from eval_results.json: C001 is on M02;
+    C002/C003/C004 are ALSO on M02 with the same symptom -- that's
+    recurrence, not a cross-machine pattern, even though the model kept
+    citing it as Material after three rounds of prompt fixes."""
+    investigated = agent._complaints_by_id["C001"]
+    conclusion = {"root_cause_category": "Material",
+                  "root_cause_hypothesis": "Multiple complaints C002, C003, C004 on the same batch confirm "
+                                            "a material issue."}
+    is_valid, reason = agent._verify_material_citation(conclusion, investigated)
+    assert not is_valid
+    assert "SAME" in reason and "M02" in reason
+    print("_verify_material_citation: rejects same-machine recurrence cited as Material -- the real eval failure")
+
+
+def test_verify_material_citation_rejects_no_cited_ids():
+    conclusion = {"root_cause_category": "Material", "root_cause_hypothesis": "Multiple customers reported this."}
+    is_valid, reason = agent._verify_material_citation(
+        conclusion, {"batch_code": "M02-2026W13", "defect_description": "x"})
+    assert not is_valid and "doesn't cite" in reason
+    print("_verify_material_citation: rejects a Material conclusion with no complaint IDs to check at all")
+
+
+def _submit_conclusion_message(call_id: str, category: str, hypothesis: str) -> AIMessage:
+    return AIMessage(content="", tool_calls=[{"name": "submit_conclusion", "id": call_id, "args": {
+        "root_cause_category": category, "root_cause_hypothesis": hypothesis,
+        "confidence": "medium", "recommended_corrective_action": "x"}}])
+
+
+def test_investigate_retries_on_invalid_material_citation_then_accepts_correction():
+    """End-to-end (mocked, no real graph/API involved): the initial
+    submit_conclusion wrongly claims Material citing a same-machine
+    complaint; the retry loop should send exactly one correction and accept
+    a fixed Equipment conclusion on the second try."""
+    bad = _submit_conclusion_message("call_1", "Material", "C002, C003, C004 same batch confirm this.")
+    fixed = _submit_conclusion_message("call_2", "Equipment", "Calibration drift per D0131.")
+    fake_final_state = {"messages": [SystemMessage(content="sys"), HumanMessage(content="investigate"), bad],
+                         "steps": 3}
+
+    with patch.object(agent.graph, "invoke", return_value=fake_final_state), \
+         patch.object(agent, "_invoke_forced_conclusion", return_value=fixed) as mock_correct:
+        result = agent.investigate("C001")
+
+    assert mock_correct.call_count == 1, "should correct exactly once when the fix is accepted on the first retry"
+    assert result["conclusion"]["root_cause_category"] == "Equipment"
+    assert result["material_verification_failed"] is False
+    assert len(result["verification_log"]) == 1
+    assert "SAME" in result["verification_log"][0]["reason"]
+    print("investigate(): caught a bad same-machine Material citation, corrected in one retry, "
+          "returned the fixed Equipment conclusion")
+
+
+def test_investigate_gives_up_after_max_verification_retries():
+    """If the model stubbornly re-asserts the same invalid Material citation
+    every time, the retry loop must stop at MAX_VERIFICATION_RETRIES and
+    flag material_verification_failed rather than looping forever."""
+    initial = _submit_conclusion_message("c0", "Material", "C002, C003 same batch.")
+    fake_final_state = {"messages": [SystemMessage(content="sys"), HumanMessage(content="investigate"), initial],
+                         "steps": 3}
+    stubborn = _submit_conclusion_message("cN", "Material", "Still C002, C003, C004 same batch.")
+
+    with patch.object(agent.graph, "invoke", return_value=fake_final_state), \
+         patch.object(agent, "_invoke_forced_conclusion", return_value=stubborn) as mock_correct:
+        result = agent.investigate("C001")
+
+    assert mock_correct.call_count == agent.MAX_VERIFICATION_RETRIES
+    assert result["material_verification_failed"] is True
+    assert len(result["verification_log"]) == agent.MAX_VERIFICATION_RETRIES
+    print(f"investigate(): stops after exactly {agent.MAX_VERIFICATION_RETRIES} correction attempts, "
+          f"flags material_verification_failed instead of looping forever")
+
+
 if __name__ == "__main__":
     test_invoke_forced_conclusion_retries_once_on_empty_response()
     test_invoke_forced_conclusion_does_not_retry_twice()
     test_invoke_forced_conclusion_skips_retry_on_success()
     test_route_after_agent_routing()
     test_call_agent_forces_conclusion_when_investigating_model_narrates_instead_of_calling()
+    test_verify_material_citation_ignores_non_material_categories()
+    test_verify_material_citation_accepts_genuine_cross_machine_match()
+    test_verify_material_citation_rejects_same_machine_recurrence()
+    test_verify_material_citation_rejects_no_cited_ids()
+    test_investigate_retries_on_invalid_material_citation_then_accepts_correction()
+    test_investigate_gives_up_after_max_verification_retries()
     print("\nAll agent self-tests passed (no LLM/API calls made).")

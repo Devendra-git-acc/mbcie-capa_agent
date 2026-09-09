@@ -1,0 +1,63 @@
+{
+  "doc_id": "D04",
+  "format": "scanned",
+  "files": [
+    "D04_p1.jpg"
+  ],
+  "extraction_failed": false,
+  "extracted": {
+    "doc_type": "invoice",
+    "doc_number": "IN-2026-1003",
+    "doc_date": "2026-04-13",
+    "vendor_name": "Ahmedabad Wheel & Tyre Supplies",
+    "buyer_name": "MBCIE Procurement Dept.",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Tread Rubber Sheet",
+        "quantity": 34.0,
+        "unit_price": 777.04,
+        "line_total": 26419.36
+      },
+      {
+        "description": "Tyre Repair Patch Kit yd",
+        "quantity": null,
+        "unit_price": 537.13,
+        "line_total": 30616.41
+      },
+      {
+        "description": "Rubber Compound Batch (25kg)",
+        "quantity": 55.0,
+        "unit_price": 548.52,
+        "line_total": 30168.6
+      }
+    ],
+    "subtotal": null,
+    "tax_amount": 15696.79,
+    "total_amount": 102901.16
+  },
+  "confidence": {
+    "source_confidence": 0.873,
+    "completeness": 1.0,
+    "arithmetic_consistent": false,
+    "overall_confidence": 0.743,
+    "needs_review": true,
+    "review_reasons": [
+      "totals don't reconcile (subtotal + tax != total, or items don't sum to subtotal)"
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 709,
+    "output_tokens": 161,
+    "total_tokens": 870,
+    "input_token_details": {
+      "audio": 0,
+      "cache_read": 0
+    },
+    "output_token_details": {
+      "audio": 0,
+      "reasoning": 0
+    }
+  },
+  "raw_text_excerpt": "Ahmedabad Wheel & Tyre Supplies. Tax Invoice Bill No: IN-2026-1003 | Bill Date: 2026-04-13 | Buyer: MBCIE Procurement Dept. Particulars Qty Price Value Tread Rubber Sheet 34 Rs.777.04 Rs.26,419.36 Tyre Repair Patch Kit yd Rs.537.13 Rs.30,616.41 Rubber Compound Batch (25kg) 55 Rs.548.52 Rs.30,168.60 Total Payable: Rs.102,901.16 (incl. tax Rs. 15,696.79)"
+}

@@ -1,0 +1,14 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+.idea/
+.claude/
+
+# Not part of the submission repo
+MBCIE_Assessment_Devendra_Khandale.docx
+*.zip
+DAY1_STATUS.md
+DAY2_STATUS.md
+DAY3_STATUS.md

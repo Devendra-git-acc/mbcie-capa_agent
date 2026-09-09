@@ -1,0 +1,574 @@
+{
+  "n_runs_per_complaint": 3,
+  "total_complaints": 18,
+  "total_investigations": 54,
+  "overall_hit_rate": 0.611,
+  "conclusion_failed_rate": 0.0,
+  "evidence_surfaced_rate": 1.0,
+  "per_category_hit_rate": {
+    "Equipment": 0.444,
+    "Human": 1.0,
+    "Material": 1.0,
+    "Insufficient evidence": 0.0
+  },
+  "per_complaint": {
+    "C001": {
+      "truth_category": "Equipment",
+      "hit_rate": 0.667,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": true,
+          "steps_used": 3
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": true,
+          "steps_used": 3
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": false,
+          "evidence_surfaced": true,
+          "steps_used": 3
+        }
+      ]
+    },
+    "C002": {
+      "truth_category": "Equipment",
+      "hit_rate": 0.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": false,
+          "evidence_surfaced": true,
+          "steps_used": 3
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": false,
+          "evidence_surfaced": true,
+          "steps_used": 3
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": false,
+          "evidence_surfaced": true,
+          "steps_used": 3
+        }
+      ]
+    },
+    "C003": {
+      "truth_category": "Equipment",
+      "hit_rate": 0.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": false,
+          "evidence_surfaced": true,
+          "steps_used": 3
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": false,
+          "evidence_surfaced": true,
+          "steps_used": 3
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": false,
+          "evidence_surfaced": true,
+          "steps_used": 3
+        }
+      ]
+    },
+    "C004": {
+      "truth_category": "Equipment",
+      "hit_rate": 0.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": false,
+          "evidence_surfaced": true,
+          "steps_used": 3
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": false,
+          "evidence_surfaced": true,
+          "steps_used": 3
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": false,
+          "evidence_surfaced": true,
+          "steps_used": 3
+        }
+      ]
+    },
+    "C005": {
+      "truth_category": "Human",
+      "hit_rate": 1.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "predicted_category": "Human",
+          "category_match": true,
+          "evidence_surfaced": true,
+          "steps_used": 3
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "predicted_category": "Human",
+          "category_match": true,
+          "evidence_surfaced": true,
+          "steps_used": 3
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "predicted_category": "Human",
+          "category_match": true,
+          "evidence_surfaced": true,
+          "steps_used": 3
+        }
+      ]
+    },
+    "C006": {
+      "truth_category": "Human",
+      "hit_rate": 1.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "predicted_category": "Human",
+          "category_match": true,
+          "evidence_surfaced": true,
+          "steps_used": 3
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "predicted_category": "Human",
+          "category_match": true,
+          "evidence_surfaced": true,
+          "steps_used": 3
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "predicted_category": "Human",
+          "category_match": true,
+          "evidence_surfaced": true,
+          "steps_used": 3
+        }
+      ]
+    },
+    "C007": {
+      "truth_category": "Human",
+      "hit_rate": 1.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "predicted_category": "Human",
+          "category_match": true,
+          "evidence_surfaced": true,
+          "steps_used": 3
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "predicted_category": "Human",
+          "category_match": true,
+          "evidence_surfaced": true,
+          "steps_used": 3
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "predicted_category": "Human",
+          "category_match": true,
+          "evidence_surfaced": true,
+          "steps_used": 3
+        }
+      ]
+    },
+    "C008": {
+      "truth_category": "Material",
+      "hit_rate": 1.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        }
+      ]
+    },
+    "C009": {
+      "truth_category": "Material",
+      "hit_rate": 1.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        }
+      ]
+    },
+    "C010": {
+      "truth_category": "Material",
+      "hit_rate": 1.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        }
+      ]
+    },
+    "C011": {
+      "truth_category": "Material",
+      "hit_rate": 1.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        }
+      ]
+    },
+    "C012": {
+      "truth_category": "Equipment",
+      "hit_rate": 0.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": false,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": false,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": false,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        }
+      ]
+    },
+    "C013": {
+      "truth_category": "Equipment",
+      "hit_rate": 1.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        }
+      ]
+    },
+    "C014": {
+      "truth_category": "Equipment",
+      "hit_rate": 0.333,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": false,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": false,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        }
+      ]
+    },
+    "C015": {
+      "truth_category": "Equipment",
+      "hit_rate": 1.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        }
+      ]
+    },
+    "C016": {
+      "truth_category": "Equipment",
+      "hit_rate": 1.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        }
+      ]
+    },
+    "C017": {
+      "truth_category": "Insufficient evidence",
+      "hit_rate": 0.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": false,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": false,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": false,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        }
+      ]
+    },
+    "C018": {
+      "truth_category": "Insufficient evidence",
+      "hit_rate": 0.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": false,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": false,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "predicted_category": "Material",
+          "category_match": false,
+          "evidence_surfaced": null,
+          "steps_used": 3
+        }
+      ]
+    }
+  }
+}

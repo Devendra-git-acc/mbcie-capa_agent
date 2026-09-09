@@ -1,0 +1,13 @@
+services:
+  mbcie-api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      # extraction results survive a container rebuild/restart instead of
+      # being lost with the container's ephemeral filesystem -- everything
+      # else (code, the 10 fixture docs) is baked into the image itself
+      - ./extraction/output:/app/extraction/output
+    restart: unless-stopped

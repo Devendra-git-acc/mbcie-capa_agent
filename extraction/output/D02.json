@@ -1,0 +1,67 @@
+{
+  "doc_id": "D02",
+  "format": "digital",
+  "files": [
+    "D02.pdf"
+  ],
+  "extraction_failed": false,
+  "extracted": {
+    "doc_type": "purchase_order",
+    "doc_number": "PU-2026-1001",
+    "doc_date": "2026-02-11",
+    "vendor_name": "Continental Traders Pvt Ltd",
+    "buyer_name": "MBCIE Procurement Dept.",
+    "currency": "USD",
+    "line_items": [
+      {
+        "description": "Curing Press Gasket Kit",
+        "quantity": 7.0,
+        "unit_price": 197.56,
+        "line_total": 1382.92
+      },
+      {
+        "description": "Vulcanizing Solution (1L)",
+        "quantity": 34.0,
+        "unit_price": 517.69,
+        "line_total": 17601.46
+      },
+      {
+        "description": "Bicycle Alloy Rim 26in",
+        "quantity": 37.0,
+        "unit_price": 181.03,
+        "line_total": 6698.11
+      },
+      {
+        "description": "Steel Radial Tyre 175/65 R14",
+        "quantity": 43.0,
+        "unit_price": 600.61,
+        "line_total": 25826.23
+      }
+    ],
+    "subtotal": 51508.72,
+    "tax_amount": 4120.7,
+    "total_amount": 55629.42
+  },
+  "confidence": {
+    "source_confidence": 0.98,
+    "completeness": 1.0,
+    "arithmetic_consistent": true,
+    "overall_confidence": 0.991,
+    "needs_review": false,
+    "review_reasons": []
+  },
+  "token_usage": {
+    "input_tokens": 755,
+    "output_tokens": 199,
+    "total_tokens": 954,
+    "input_token_details": {
+      "audio": 0,
+      "cache_read": 0
+    },
+    "output_token_details": {
+      "audio": 0,
+      "reasoning": 0
+    }
+  },
+  "raw_text_excerpt": "PURCHASE ORDER\nPO Number: PU-2026-1001\nPO Date: 2026-02-11\nVendor: Continental Traders Pvt Ltd\nShip To: MBCIE Procurement Dept.\nItem\nQuantity\nRate\nLine Total\nCuring Press Gasket Kit\n7\n$197.56\n$1,382.92\nVulcanizing Solution (1L)\n34\n$517.69\n$17,601.46\nBicycle Alloy Rim 26in\n37\n$181.03\n$6,698.11\nSteel Radial Tyre 175/65 R14\n43\n$600.61\n$25,826.23\nSub Total: $51,508.72\nGST: $4,120.70\nGrand Total: $55,629.42\n"
+}

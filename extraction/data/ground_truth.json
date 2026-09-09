@@ -1,0 +1,183 @@
+{
+  "D01": {
+    "format": "digital",
+    "layout": "A",
+    "files": [
+      "D01.pdf"
+    ],
+    "note": "baseline digital",
+    "doc_type": "invoice",
+    "doc_number": "IN-2026-1000",
+    "doc_date": "2026-01-10",
+    "vendor_name": "Shree Balaji Rubber Industries",
+    "buyer_name": "MBCIE Tyre & Cycle Plant",
+    "currency": "INR",
+    "n_line_items": 3,
+    "subtotal": 45590.41,
+    "tax_amount": 8206.27,
+    "total_amount": 53796.68
+  },
+  "D02": {
+    "format": "digital",
+    "layout": "B",
+    "files": [
+      "D02.pdf"
+    ],
+    "note": "baseline digital, different labels/currency",
+    "doc_type": "purchase_order",
+    "doc_number": "PU-2026-1001",
+    "doc_date": "2026-02-11",
+    "vendor_name": "Continental Traders Pvt Ltd",
+    "buyer_name": "MBCIE Procurement Dept.",
+    "currency": "USD",
+    "n_line_items": 4,
+    "subtotal": 51508.72,
+    "tax_amount": 4120.7,
+    "total_amount": 55629.42
+  },
+  "D03": {
+    "format": "digital",
+    "layout": "A",
+    "files": [
+      "D03.pdf"
+    ],
+    "note": "long item table -> forces a real page break",
+    "doc_type": "invoice",
+    "doc_number": "IN-2026-1002",
+    "doc_date": "2026-03-12",
+    "vendor_name": "Pune Component Works",
+    "buyer_name": "MBCIE Tyre & Cycle Plant",
+    "currency": "INR",
+    "n_line_items": 40,
+    "subtotal": 521829.07,
+    "tax_amount": 93929.23,
+    "total_amount": 615758.3
+  },
+  "D04": {
+    "format": "scanned",
+    "layout": "C",
+    "files": [
+      "D04_p1.jpg"
+    ],
+    "note": "light scan noise",
+    "doc_type": "invoice",
+    "doc_number": "IN-2026-1003",
+    "doc_date": "2026-04-13",
+    "vendor_name": "Ahmedabad Wheel & Tyre Supplies",
+    "buyer_name": "MBCIE Procurement Dept.",
+    "currency": "INR",
+    "n_line_items": 3,
+    "subtotal": 87204.37,
+    "tax_amount": 15696.79,
+    "total_amount": 102901.16
+  },
+  "D05": {
+    "format": "scanned",
+    "layout": "B",
+    "files": [
+      "D05_p1.jpg"
+    ],
+    "note": "light scan noise",
+    "doc_type": "purchase_order",
+    "doc_number": "PU-2026-1004",
+    "doc_date": "2026-05-14",
+    "vendor_name": "Nashik Precision Parts",
+    "buyer_name": "MBCIE Tyre & Cycle Plant",
+    "currency": "USD",
+    "n_line_items": 4,
+    "subtotal": 57398.51,
+    "tax_amount": 4591.88,
+    "total_amount": 61990.39
+  },
+  "D06": {
+    "format": "scanned",
+    "layout": "C",
+    "files": [
+      "D06_p1.jpg"
+    ],
+    "note": "HEAVY scan degradation -- meant to land in review queue",
+    "doc_type": "invoice",
+    "doc_number": "IN-2026-1005",
+    "doc_date": "2026-06-15",
+    "vendor_name": "Bharat Tyre Chemicals",
+    "buyer_name": "MBCIE Procurement Dept.",
+    "currency": "INR",
+    "n_line_items": 3,
+    "subtotal": 36304.56,
+    "tax_amount": 6534.82,
+    "total_amount": 42839.38
+  },
+  "D07": {
+    "format": "digital",
+    "layout": "D",
+    "files": [
+      "D07.pdf"
+    ],
+    "note": "extra HSN column, digital",
+    "doc_type": "invoice",
+    "doc_number": "IN-2026-1006",
+    "doc_date": "2026-07-16",
+    "vendor_name": "MG Bicycle Components",
+    "buyer_name": "MBCIE Tyre & Cycle Plant",
+    "currency": "EUR",
+    "n_line_items": 5,
+    "subtotal": 87124.88,
+    "tax_amount": 18296.22,
+    "total_amount": 105421.1
+  },
+  "D08": {
+    "format": "digital",
+    "layout": "E",
+    "files": [
+      "D08.pdf"
+    ],
+    "note": "non-tabular plain-list format, digital",
+    "doc_type": "purchase_order",
+    "doc_number": "PU-2026-1007",
+    "doc_date": "2026-08-17",
+    "vendor_name": "Sunrise Industrial Supplies",
+    "buyer_name": "MBCIE Procurement Dept.",
+    "currency": "INR",
+    "n_line_items": 4,
+    "subtotal": 48788.7,
+    "tax_amount": 8781.97,
+    "total_amount": 57570.67
+  },
+  "D09": {
+    "format": "scanned",
+    "layout": "A",
+    "files": [
+      "D09_p1.jpg",
+      "D09_p2.jpg"
+    ],
+    "note": "scanned AND multi-page -- hardest combined case",
+    "doc_type": "invoice",
+    "doc_number": "IN-2026-1008",
+    "doc_date": "2026-09-18",
+    "vendor_name": "Shree Balaji Rubber Industries",
+    "buyer_name": "MBCIE Tyre & Cycle Plant",
+    "currency": "INR",
+    "n_line_items": 35,
+    "subtotal": 458591.0,
+    "tax_amount": 82546.38,
+    "total_amount": 541137.38
+  },
+  "D10": {
+    "format": "digital",
+    "layout": "A",
+    "files": [
+      "D10.pdf"
+    ],
+    "note": "doc_number omitted from source -- tests completeness signal",
+    "doc_type": "invoice",
+    "doc_number": null,
+    "doc_date": "2026-01-19",
+    "vendor_name": "Continental Traders Pvt Ltd",
+    "buyer_name": "MBCIE Procurement Dept.",
+    "currency": "INR",
+    "n_line_items": 3,
+    "subtotal": 32168.12,
+    "tax_amount": 5790.26,
+    "total_amount": 37958.38
+  }
+}

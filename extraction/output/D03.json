@@ -1,0 +1,283 @@
+{
+  "doc_id": "D03",
+  "format": "digital",
+  "files": [
+    "D03.pdf"
+  ],
+  "extraction_failed": false,
+  "extracted": {
+    "doc_type": "invoice",
+    "doc_number": "IN-2026-1002",
+    "doc_date": "2026-03-12",
+    "vendor_name": "Pune Component Works",
+    "buyer_name": "MBCIE Tyre & Cycle Plant",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Vulcanizing Solution (1L)",
+        "quantity": 12.0,
+        "unit_price": 324.1,
+        "line_total": 3889.2
+      },
+      {
+        "description": "Mold Release Agent (5L)",
+        "quantity": 15.0,
+        "unit_price": 574.6,
+        "line_total": 8619.0
+      },
+      {
+        "description": "Bicycle Spoke Set (36pc)",
+        "quantity": 46.0,
+        "unit_price": 797.11,
+        "line_total": 36667.06
+      },
+      {
+        "description": "Bicycle Brake Pad Set",
+        "quantity": 43.0,
+        "unit_price": 74.62,
+        "line_total": 3208.66
+      },
+      {
+        "description": "Bead Wire Coil 2.5mm",
+        "quantity": 42.0,
+        "unit_price": 157.9,
+        "line_total": 6631.8
+      },
+      {
+        "description": "Wheel Bearing Assembly",
+        "quantity": 48.0,
+        "unit_price": 219.42,
+        "line_total": 10532.16
+      },
+      {
+        "description": "Steel Radial Tyre 175/65 R14",
+        "quantity": 31.0,
+        "unit_price": 331.85,
+        "line_total": 10287.35
+      },
+      {
+        "description": "Curing Press Gasket Kit",
+        "quantity": 42.0,
+        "unit_price": 589.62,
+        "line_total": 24764.04
+      },
+      {
+        "description": "Bicycle Chain 1/2x1/8in",
+        "quantity": 16.0,
+        "unit_price": 586.65,
+        "line_total": 9386.4
+      },
+      {
+        "description": "Rubber Compound Batch (25kg)",
+        "quantity": 55.0,
+        "unit_price": 656.54,
+        "line_total": 36109.7
+      },
+      {
+        "description": "Bicycle Pedal Pair",
+        "quantity": 5.0,
+        "unit_price": 206.26,
+        "line_total": 1031.3
+      },
+      {
+        "description": "Bicycle Alloy Rim 26in",
+        "quantity": 4.0,
+        "unit_price": 687.21,
+        "line_total": 2748.84
+      },
+      {
+        "description": "Nylon Cord Fabric Roll",
+        "quantity": 27.0,
+        "unit_price": 238.56,
+        "line_total": 6441.12
+      },
+      {
+        "description": "Carbon Black Filler (bag)",
+        "quantity": 15.0,
+        "unit_price": 777.47,
+        "line_total": 11662.05
+      },
+      {
+        "description": "Tyre Sidewall Label Set",
+        "quantity": 38.0,
+        "unit_price": 746.77,
+        "line_total": 28377.26
+      },
+      {
+        "description": "Tyre Valve Stem (pack of 50)",
+        "quantity": 22.0,
+        "unit_price": 192.54,
+        "line_total": 4235.88
+      },
+      {
+        "description": "Tread Rubber Sheet",
+        "quantity": 33.0,
+        "unit_price": 345.35,
+        "line_total": 11396.55
+      },
+      {
+        "description": "Tyre Repair Patch Kit",
+        "quantity": 60.0,
+        "unit_price": 551.78,
+        "line_total": 33106.8
+      },
+      {
+        "description": "Bicycle Chain 1/2x1/8in",
+        "quantity": 11.0,
+        "unit_price": 236.17,
+        "line_total": 2597.87
+      },
+      {
+        "description": "Bicycle Chain 1/2x1/8in",
+        "quantity": 17.0,
+        "unit_price": 637.07,
+        "line_total": 10830.19
+      },
+      {
+        "description": "Bead Wire Coil 2.5mm",
+        "quantity": 36.0,
+        "unit_price": 234.39,
+        "line_total": 8438.04
+      },
+      {
+        "description": "Steel Radial Tyre 175/65 R14",
+        "quantity": 39.0,
+        "unit_price": 372.74,
+        "line_total": 14536.86
+      },
+      {
+        "description": "Tread Rubber Sheet",
+        "quantity": 39.0,
+        "unit_price": 348.5,
+        "line_total": 13591.5
+      },
+      {
+        "description": "Curing Press Gasket Kit",
+        "quantity": 16.0,
+        "unit_price": 847.77,
+        "line_total": 13564.32
+      },
+      {
+        "description": "Tyre Repair Patch Kit",
+        "quantity": 10.0,
+        "unit_price": 440.45,
+        "line_total": 4404.5
+      },
+      {
+        "description": "Bicycle Alloy Rim 26in",
+        "quantity": 7.0,
+        "unit_price": 646.08,
+        "line_total": 4522.56
+      },
+      {
+        "description": "Rubber Compound Batch (25kg)",
+        "quantity": 57.0,
+        "unit_price": 106.56,
+        "line_total": 6073.92
+      },
+      {
+        "description": "Tyre Sidewall Label Set",
+        "quantity": 42.0,
+        "unit_price": 148.58,
+        "line_total": 6240.36
+      },
+      {
+        "description": "Nylon Cord Fabric Roll",
+        "quantity": 45.0,
+        "unit_price": 367.5,
+        "line_total": 16537.5
+      },
+      {
+        "description": "Bicycle Chain 1/2x1/8in",
+        "quantity": 6.0,
+        "unit_price": 336.28,
+        "line_total": 2017.68
+      },
+      {
+        "description": "Tyre Valve Stem (pack of 50)",
+        "quantity": 40.0,
+        "unit_price": 846.76,
+        "line_total": 33870.4
+      },
+      {
+        "description": "Bicycle Alloy Rim 26in",
+        "quantity": 35.0,
+        "unit_price": 224.93,
+        "line_total": 7872.55
+      },
+      {
+        "description": "Tyre Sidewall Label Set",
+        "quantity": 37.0,
+        "unit_price": 733.75,
+        "line_total": 27148.75
+      },
+      {
+        "description": "Vulcanizing Solution (1L)",
+        "quantity": 2.0,
+        "unit_price": 583.04,
+        "line_total": 1166.08
+      },
+      {
+        "description": "Bicycle Pedal Pair",
+        "quantity": 9.0,
+        "unit_price": 584.23,
+        "line_total": 5258.07
+      },
+      {
+        "description": "Nylon Cord Fabric Roll",
+        "quantity": 36.0,
+        "unit_price": 641.98,
+        "line_total": 23111.28
+      },
+      {
+        "description": "Nylon Cord Fabric Roll",
+        "quantity": 51.0,
+        "unit_price": 550.2,
+        "line_total": 28060.2
+      },
+      {
+        "description": "Bicycle Chain 1/2x1/8in",
+        "quantity": 9.0,
+        "unit_price": 260.07,
+        "line_total": 2340.63
+      },
+      {
+        "description": "Tread Rubber Sheet",
+        "quantity": 12.0,
+        "unit_price": 393.86,
+        "line_total": 4726.32
+      },
+      {
+        "description": "Nylon Cord Fabric Roll",
+        "quantity": 48.0,
+        "unit_price": 746.34,
+        "line_total": 35824.32
+      }
+    ],
+    "subtotal": 521829.07,
+    "tax_amount": 93929.23,
+    "total_amount": 615758.3
+  },
+  "confidence": {
+    "source_confidence": 0.98,
+    "completeness": 1.0,
+    "arithmetic_consistent": true,
+    "overall_confidence": 0.991,
+    "needs_review": false,
+    "review_reasons": []
+  },
+  "token_usage": {
+    "input_tokens": 1637,
+    "output_tokens": 1252,
+    "total_tokens": 2889,
+    "input_token_details": {
+      "audio": 0,
+      "cache_read": 0
+    },
+    "output_token_details": {
+      "audio": 0,
+      "reasoning": 0
+    }
+  },
+  "raw_text_excerpt": "Pune Component Works\nINVOICE\nInvoice No: IN-2026-1002\nDate: 2026-03-12\nBill To: MBCIE Tyre & Cycle Plant\nDescription\nQty\nUnit Price\nAmount\nVulcanizing Solution (1L)\n12\nRs.324.10\nRs.3,889.20\nMold Release Agent (5L)\n15\nRs.574.60\nRs.8,619.00\nBicycle Spoke Set (36pc)\n46\nRs.797.11\nRs.36,667.06\nBicycle Brake Pad Set\n43\nRs.74.62\nRs.3,208.66\nBead Wire Coil 2.5mm\n42\nRs.157.90\nRs.6,631.80\nWheel Bearing Assembly\n48\nRs.219.42\nRs.10,532.16\nSteel Radial Tyre 175/65 R14\n31\nRs.331.85\nRs.10,287.35\nCuring Press G"
+}

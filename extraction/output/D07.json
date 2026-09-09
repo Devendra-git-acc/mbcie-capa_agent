@@ -1,0 +1,73 @@
+{
+  "doc_id": "D07",
+  "format": "digital",
+  "files": [
+    "D07.pdf"
+  ],
+  "extraction_failed": false,
+  "extracted": {
+    "doc_type": "invoice",
+    "doc_number": "IN-2026-1006",
+    "doc_date": "2026-07-16",
+    "vendor_name": "MG Bicycle Components",
+    "buyer_name": "MBCIE Tyre & Cycle Plant",
+    "currency": "EUR",
+    "line_items": [
+      {
+        "description": "Bicycle Pedal Pair",
+        "quantity": 37.0,
+        "unit_price": 152.88,
+        "line_total": 5656.56
+      },
+      {
+        "description": "Bead Wire Coil 2.5mm",
+        "quantity": 35.0,
+        "unit_price": 743.48,
+        "line_total": 26021.8
+      },
+      {
+        "description": "Tyre Repair Patch Kit",
+        "quantity": 29.0,
+        "unit_price": 820.24,
+        "line_total": 23786.96
+      },
+      {
+        "description": "Carbon Black Filler (bag)",
+        "quantity": 36.0,
+        "unit_price": 645.65,
+        "line_total": 23243.4
+      },
+      {
+        "description": "Mold Release Agent (5L)",
+        "quantity": 46.0,
+        "unit_price": 182.96,
+        "line_total": 8416.16
+      }
+    ],
+    "subtotal": 87124.88,
+    "tax_amount": 18296.22,
+    "total_amount": 105421.1
+  },
+  "confidence": {
+    "source_confidence": 0.98,
+    "completeness": 1.0,
+    "arithmetic_consistent": true,
+    "overall_confidence": 0.991,
+    "needs_review": false,
+    "review_reasons": []
+  },
+  "token_usage": {
+    "input_tokens": 806,
+    "output_tokens": 222,
+    "total_tokens": 1028,
+    "input_token_details": {
+      "audio": 0,
+      "cache_read": 0
+    },
+    "output_token_details": {
+      "audio": 0,
+      "reasoning": 0
+    }
+  },
+  "raw_text_excerpt": "MG Bicycle Components\nTAX INVOICE\nInvoice #\nIN-2026-1006\nDate\n2026-07-16\nCustomer\nMBCIE Tyre & Cycle Plant\nS.No\nDescription\nHSN\nQty\nRate\nAmount\n1\nBicycle Pedal Pair\n4011\n37\nEUR 152.88\nEUR 5,656.56\n2\nBead Wire Coil 2.5mm\n4011\n35\nEUR 743.48\nEUR 26,021.80\n3\nTyre Repair Patch Kit\n4011\n29\nEUR 820.24\nEUR 23,786.96\n4\nCarbon Black Filler (bag)\n4011\n36\nEUR 645.65\nEUR 23,243.40\n5\nMold Release Agent (5L)\n4011\n46\nEUR 182.96\nEUR 8,416.16\nTotal: EUR 105,421.10 (Subtotal EUR 87,124.88 + Tax EUR 18,296.22)\n"
+}

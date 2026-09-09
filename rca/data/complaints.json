@@ -1,0 +1,164 @@
+[
+  {
+    "complaint_id": "C001",
+    "date_reported": "2026-03-29",
+    "batch_code": "M02-2026W13",
+    "product_line": "tyre",
+    "defect_description": "Tread separation reported after short mileage; internal inspection shows air pocket / blister beneath tread on inner shoulder, consistent with under-cure.",
+    "customer_or_dealer": "Dealer-Pune-02",
+    "severity": "high"
+  },
+  {
+    "complaint_id": "C002",
+    "date_reported": "2026-03-25",
+    "batch_code": "M02-2026W13",
+    "product_line": "tyre",
+    "defect_description": "Tread separation reported after short mileage; internal inspection shows air pocket / blister beneath tread on inner shoulder, consistent with under-cure.",
+    "customer_or_dealer": "Dealer-Pune-02",
+    "severity": "high"
+  },
+  {
+    "complaint_id": "C003",
+    "date_reported": "2026-04-03",
+    "batch_code": "M02-2026W14",
+    "product_line": "tyre",
+    "defect_description": "Tread separation reported after short mileage; internal inspection shows air pocket / blister beneath tread on inner shoulder, consistent with under-cure.",
+    "customer_or_dealer": "Dealer-Nashik-04",
+    "severity": "high"
+  },
+  {
+    "complaint_id": "C004",
+    "date_reported": "2026-04-02",
+    "batch_code": "M02-2026W14",
+    "product_line": "tyre",
+    "defect_description": "Tread separation reported after short mileage; internal inspection shows air pocket / blister beneath tread on inner shoulder, consistent with under-cure.",
+    "customer_or_dealer": "Dealer-Ahmedabad-03",
+    "severity": "high"
+  },
+  {
+    "complaint_id": "C005",
+    "date_reported": "2026-04-19",
+    "batch_code": "M05-2026W16",
+    "product_line": "cycle",
+    "defect_description": "Weld crack at frame down-tube/seat-tube joint discovered during final QC; weld bead appears inconsistent / under-penetrated.",
+    "customer_or_dealer": "Dealer-Ahmedabad-03",
+    "severity": "high"
+  },
+  {
+    "complaint_id": "C006",
+    "date_reported": "2026-04-18",
+    "batch_code": "M05-2026W16",
+    "product_line": "cycle",
+    "defect_description": "Weld crack at frame down-tube/seat-tube joint discovered during final QC; weld bead appears inconsistent / under-penetrated.",
+    "customer_or_dealer": "Dealer-Pune-02",
+    "severity": "high"
+  },
+  {
+    "complaint_id": "C007",
+    "date_reported": "2026-04-17",
+    "batch_code": "M05-2026W16",
+    "product_line": "cycle",
+    "defect_description": "Weld crack at frame down-tube/seat-tube joint discovered during final QC; weld bead appears inconsistent / under-penetrated.",
+    "customer_or_dealer": "Dealer-Nashik-04",
+    "severity": "high"
+  },
+  {
+    "complaint_id": "C008",
+    "date_reported": "2026-04-24",
+    "batch_code": "M01-2026W17",
+    "product_line": "tyre",
+    "defect_description": "Sidewall cracking visible near mid-sidewall region shortly after entering service; no impact damage reported by customer.",
+    "customer_or_dealer": "Dealer-Pune-02",
+    "severity": "high"
+  },
+  {
+    "complaint_id": "C009",
+    "date_reported": "2026-04-22",
+    "batch_code": "M01-2026W17",
+    "product_line": "tyre",
+    "defect_description": "Sidewall cracking visible near mid-sidewall region shortly after entering service; no impact damage reported by customer.",
+    "customer_or_dealer": "Dealer-Nashik-04",
+    "severity": "high"
+  },
+  {
+    "complaint_id": "C010",
+    "date_reported": "2026-04-25",
+    "batch_code": "M03-2026W17",
+    "product_line": "tyre",
+    "defect_description": "Sidewall cracking visible near mid-sidewall region shortly after entering service; no impact damage reported by customer.",
+    "customer_or_dealer": "Dealer-Nagpur-05",
+    "severity": "high"
+  },
+  {
+    "complaint_id": "C011",
+    "date_reported": "2026-04-26",
+    "batch_code": "M03-2026W17",
+    "product_line": "tyre",
+    "defect_description": "Sidewall cracking visible near mid-sidewall region shortly after entering service; no impact damage reported by customer.",
+    "customer_or_dealer": "Dealer-Indore-07",
+    "severity": "high"
+  },
+  {
+    "complaint_id": "C012",
+    "date_reported": "2026-03-11",
+    "batch_code": "M04-2026W11",
+    "product_line": "tyre",
+    "defect_description": "Uneven tread wear pattern noted on inspection; localized shallow tread depth on one shoulder, otherwise within spec.",
+    "customer_or_dealer": "Dealer-Pune-02",
+    "severity": "low"
+  },
+  {
+    "complaint_id": "C013",
+    "date_reported": "2026-03-28",
+    "batch_code": "M04-2026W13",
+    "product_line": "tyre",
+    "defect_description": "Uneven tread wear pattern noted on inspection; localized shallow tread depth on one shoulder, otherwise within spec.",
+    "customer_or_dealer": "Dealer-Ahmedabad-03",
+    "severity": "low"
+  },
+  {
+    "complaint_id": "C014",
+    "date_reported": "2026-04-12",
+    "batch_code": "M04-2026W15",
+    "product_line": "tyre",
+    "defect_description": "Uneven tread wear pattern noted on inspection; localized shallow tread depth on one shoulder, otherwise within spec.",
+    "customer_or_dealer": "Dealer-Pune-02",
+    "severity": "low"
+  },
+  {
+    "complaint_id": "C015",
+    "date_reported": "2026-04-26",
+    "batch_code": "M04-2026W17",
+    "product_line": "tyre",
+    "defect_description": "Uneven tread wear pattern noted on inspection; localized shallow tread depth on one shoulder, otherwise within spec.",
+    "customer_or_dealer": "Dealer-Ahmedabad-03",
+    "severity": "low"
+  },
+  {
+    "complaint_id": "C016",
+    "date_reported": "2026-05-07",
+    "batch_code": "M04-2026W19",
+    "product_line": "tyre",
+    "defect_description": "Uneven tread wear pattern noted on inspection; localized shallow tread depth on one shoulder, otherwise within spec.",
+    "customer_or_dealer": "Dealer-Nagpur-05",
+    "severity": "low"
+  },
+  {
+    "complaint_id": "C017",
+    "date_reported": "2026-04-30",
+    "batch_code": "M06-2026W18",
+    "product_line": "cycle",
+    "defect_description": "Wheel bearing noise / roughness reported by customer within first week of use.",
+    "customer_or_dealer": "Dealer-Surat-01",
+    "severity": "medium"
+  },
+  {
+    "complaint_id": "C018",
+    "date_reported": "2026-05-02",
+    "batch_code": "M06-2026W18",
+    "product_line": "cycle",
+    "defect_description": "Wheel bearing noise / roughness reported by customer within first week of use.",
+    "customer_or_dealer": "Dealer-Pune-02",
+    "severity": "medium"
+  }
+]

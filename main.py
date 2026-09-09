@@ -1,0 +1,175 @@
+"""
+FastAPI entry point -- exposes both tasks as one deployable service with
+basic authentication. Task 1 (brief-required) wraps the RCA agent. Task 2
+(not brief-required, added for demo/deployment convenience) wraps the
+document-extraction pipeline, including a genuine file-upload endpoint --
+not just replay of the 10 fixture documents.
+
+Run with:
+    uvicorn main:app --reload
+Then hit http://127.0.0.1:8000/docs (basic-auth prompt covers everything
+except /health).
+"""
+import json
+import secrets
+import shutil
+import sys
+import tempfile
+from pathlib import Path
+
+from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+
+REPO_ROOT = Path(__file__).parent
+
+# rca/agent.py, rca/tools.py, and extraction/pipeline.py all use bare
+# imports (e.g. "from tools import ALL_TOOLS") so they stay runnable
+# standalone (`cd rca && python run_single.py`, `cd extraction && python
+# pipeline.py`) -- see the NOTE comments in those files. Putting each
+# package directory itself on sys.path (rather than converting them to
+# package-relative imports) lets this file reuse that exact,
+# already-verified code unchanged.
+sys.path.insert(0, str(REPO_ROOT / "rca"))
+sys.path.insert(0, str(REPO_ROOT / "extraction"))
+
+# noinspection PyUnresolvedReferences
+# PyCharm's static analyzer can't follow the sys.path.insert() calls above --
+# these imports genuinely resolve at runtime (verified: server started, real
+# authenticated calls succeeded end-to-end against both). Not a bug.
+from agent import investigate  # noqa: E402
+import pipeline  # noqa: E402
+from shared.config import BASIC_AUTH_PASSWORD, BASIC_AUTH_USERNAME  # noqa: E402
+
+ALLOWED_UPLOAD_SUFFIXES = {".pdf", ".jpg", ".jpeg", ".png"}
+
+_effective_password = BASIC_AUTH_PASSWORD
+if not _effective_password:
+    # An empty configured password would mean secrets.compare_digest("", "")
+    # -- i.e. anyone sending no password at all gets in. Generate one at
+    # startup instead of shipping a demo service with auth that's trivially
+    # bypassable by default.
+    _effective_password = secrets.token_urlsafe(12)
+    print(f"[main.py] BASIC_AUTH_PASSWORD not set in .env -- generated a random "
+          f"password for this run only: {_effective_password}")
+
+_complaints = json.loads((REPO_ROOT / "rca" / "data" / "complaints.json").read_text())
+_complaint_ids = [c["complaint_id"] for c in _complaints]
+
+app = FastAPI(title="MBCIE CAPA RCA Agent", version="0.1.0")
+_security = HTTPBasic()
+
+
+def require_auth(credentials: HTTPBasicCredentials = Depends(_security)) -> str:
+    valid_user = secrets.compare_digest(credentials.username, BASIC_AUTH_USERNAME)
+    valid_pass = secrets.compare_digest(credentials.password, _effective_password)
+    if not (valid_user and valid_pass):
+        raise HTTPException(status_code=401, detail="Invalid credentials",
+                             headers={"WWW-Authenticate": "Basic"})
+    return credentials.username
+
+
+@app.get("/health")
+def health():
+    """Unauthenticated -- just proves the service is up."""
+    return {"status": "ok"}
+
+
+@app.get("/complaints", dependencies=[Depends(require_auth)])
+def list_complaints():
+    return {"complaint_ids": _complaint_ids}
+
+
+@app.post("/investigate/{complaint_id}", dependencies=[Depends(require_auth)])
+def run_investigation(complaint_id: str):
+    if complaint_id not in _complaint_ids:
+        raise HTTPException(status_code=404, detail=f"Unknown complaint_id: {complaint_id!r}. "
+                                                      f"See GET /complaints for valid IDs.")
+    try:
+        return investigate(complaint_id)
+    except Exception as e:
+        # An upstream LLM-provider failure (rate limit, bad/missing API key,
+        # network error, timeout) must not leak a raw 500 + stack trace to
+        # the caller -- 502 signals "the service you depend on failed",
+        # distinct from a bug in this API itself.
+        raise HTTPException(status_code=502,
+                             detail=f"Investigation failed -- upstream LLM provider error: "
+                                    f"{type(e).__name__}: {e}")
+
+
+@app.get("/documents", dependencies=[Depends(require_auth)])
+def list_sample_documents():
+    """The 10 fixture invoices/POs under extraction/data/, for repeatable
+    demo runs -- distinct from /extract, which takes any uploaded file."""
+    docs = pipeline.discover_documents()
+    return {"doc_ids": sorted(docs.keys())}
+
+
+@app.post("/extract/sample/{doc_id}", dependencies=[Depends(require_auth)])
+def extract_sample_document(doc_id: str):
+    """Run extraction on one of the 10 known fixture documents and persist
+    the result to extraction/output/<doc_id>.json -- the same file
+    run_batch() would produce, so hitting these one at a time via the API
+    (e.g. from /docs) builds up the exact same output/ that the batch
+    script does, and extraction/check_accuracy.py can validate either."""
+    docs = pipeline.discover_documents()
+    if doc_id not in docs:
+        raise HTTPException(status_code=404, detail=f"Unknown sample doc_id: {doc_id!r}. See GET /documents.")
+    try:
+        result = pipeline.extract_document(doc_id, docs[doc_id])
+    except Exception as e:
+        raise HTTPException(status_code=502,
+                             detail=f"Extraction failed -- upstream LLM provider error: {type(e).__name__}: {e}")
+    (pipeline.OUTPUT_DIR / f"{doc_id}.json").write_text(json.dumps(result, indent=2))
+    return result
+
+
+@app.post("/extract", dependencies=[Depends(require_auth)])
+async def extract_uploaded_document(files: list[UploadFile] = File(...)):
+    """Run extraction on a real uploaded document -- a single PDF (digital
+    or scanned, multi-page is fine, handled internally), or several image
+    files together for a hand-photographed multi-page scan. Not persisted
+    to extraction/output/ -- these are one-off, not part of the fixture
+    corpus."""
+    if not files:
+        raise HTTPException(status_code=400, detail="No files uploaded.")
+    for f in files:
+        if Path(f.filename).suffix.lower() not in ALLOWED_UPLOAD_SUFFIXES:
+            raise HTTPException(status_code=400,
+                                 detail=f"Unsupported file type for {f.filename!r}. "
+                                        f"Allowed: {sorted(ALLOWED_UPLOAD_SUFFIXES)}")
+    if len(files) > 1 and any(Path(f.filename).suffix.lower() == ".pdf" for f in files):
+        raise HTTPException(status_code=400,
+                             detail="Multiple files together must all be page images (a multi-page "
+                                    "PDF should be uploaded as a single file, not split).")
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_paths = []
+        for i, f in enumerate(files, 1):
+            dest = Path(tmp_dir) / f"upload_p{i}{Path(f.filename).suffix.lower()}"
+            with dest.open("wb") as out:
+                shutil.copyfileobj(f.file, out)
+            tmp_paths.append(dest)
+        try:
+            return pipeline.extract_document("uploaded", tmp_paths)
+        except Exception as e:
+            # Could be a malformed upload OR an upstream provider failure --
+            # 422 ("this request could not be processed") is the honest
+            # middle ground when we can't cheaply tell which from here.
+            raise HTTPException(status_code=422,
+                                 detail=f"Extraction failed: {type(e).__name__}: {e}")
+
+
+@app.get("/review-queue", dependencies=[Depends(require_auth)])
+def get_review_queue():
+    """Documents flagged for human review from the most recent batch run
+    (extraction/pipeline.py's run_batch(), or accumulated via repeated
+    POST /extract/sample/{doc_id} calls -- both write the same files)."""
+    path = pipeline.OUTPUT_DIR / "review_queue.json"
+    if not path.exists():
+        return {"review_queue": {}, "note": "No batch has been run yet."}
+    return {"review_queue": json.loads(path.read_text())}
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8000)

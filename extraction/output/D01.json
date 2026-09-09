@@ -1,0 +1,61 @@
+{
+  "doc_id": "D01",
+  "format": "digital",
+  "files": [
+    "D01.pdf"
+  ],
+  "extraction_failed": false,
+  "extracted": {
+    "doc_type": "invoice",
+    "doc_number": "IN-2026-1000",
+    "doc_date": "2026-01-10",
+    "vendor_name": "Shree Balaji Rubber Industries",
+    "buyer_name": "MBCIE Tyre & Cycle Plant",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Tyre Valve Stem (pack of 50)",
+        "quantity": 17.0,
+        "unit_price": 201.38,
+        "line_total": 3423.46
+      },
+      {
+        "description": "Steel Radial Tyre 175/65 R14",
+        "quantity": 49.0,
+        "unit_price": 100.58,
+        "line_total": 4928.42
+      },
+      {
+        "description": "Tread Rubber Sheet",
+        "quantity": 49.0,
+        "unit_price": 759.97,
+        "line_total": 37238.53
+      }
+    ],
+    "subtotal": 45590.41,
+    "tax_amount": 8206.27,
+    "total_amount": 53796.68
+  },
+  "confidence": {
+    "source_confidence": 0.98,
+    "completeness": 1.0,
+    "arithmetic_consistent": true,
+    "overall_confidence": 0.991,
+    "needs_review": false,
+    "review_reasons": []
+  },
+  "token_usage": {
+    "input_tokens": 740,
+    "output_tokens": 173,
+    "total_tokens": 913,
+    "input_token_details": {
+      "audio": 0,
+      "cache_read": 0
+    },
+    "output_token_details": {
+      "audio": 0,
+      "reasoning": 0
+    }
+  },
+  "raw_text_excerpt": "Shree Balaji Rubber Industries\nINVOICE\nInvoice No: IN-2026-1000\nDate: 2026-01-10\nBill To: MBCIE Tyre & Cycle Plant\nDescription\nQty\nUnit Price\nAmount\nTyre Valve Stem (pack of 50)\n17\nRs.201.38\nRs.3,423.46\nSteel Radial Tyre 175/65 R14\n49\nRs.100.58\nRs.4,928.42\nTread Rubber Sheet\n49\nRs.759.97\nRs.37,238.53\nSubtotal: Rs.45,590.41\nTax: Rs.8,206.27\nTotal: Rs.53,796.68\n"
+}

@@ -1,0 +1,64 @@
+{
+  "doc_id": "D06",
+  "format": "scanned",
+  "files": [
+    "D06_p1.jpg"
+  ],
+  "extraction_failed": false,
+  "extracted": {
+    "doc_type": "invoice",
+    "doc_number": "1N-2026-1095",
+    "doc_date": "2026-06-15",
+    "vendor_name": "Bharat Tyre Chemicals",
+    "buyer_name": "MBCIE Procurement Dept",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Bicycle Brake Pad Set",
+        "quantity": 1.0,
+        "unit_price": 746.54,
+        "line_total": 746.54
+      },
+      {
+        "description": "Maid Retoase Agpet",
+        "quantity": 4.0,
+        "unit_price": 86.52,
+        "line_total": 346.08
+      },
+      {
+        "description": "Bicycle Alloy Fim",
+        "quantity": 1.0,
+        "unit_price": 696.38,
+        "line_total": 696.38
+      }
+    ],
+    "subtotal": null,
+    "tax_amount": null,
+    "total_amount": 22960.54
+  },
+  "confidence": {
+    "source_confidence": 0.56,
+    "completeness": 1.0,
+    "arithmetic_consistent": false,
+    "overall_confidence": 0.602,
+    "needs_review": true,
+    "review_reasons": [
+      "low OCR confidence (0.56)",
+      "totals don't reconcile (subtotal + tax != total, or items don't sum to subtotal)"
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 700,
+    "output_tokens": 154,
+    "total_tokens": 854,
+    "input_token_details": {
+      "audio": 0,
+      "cache_read": 0
+    },
+    "output_token_details": {
+      "audio": 0,
+      "reasoning": 0
+    }
+  },
+  "raw_text_excerpt": "Bharat Tyre Chemicals Tax invowe Bat No: 1N-2026-1095 {| BW Date: 2026-06-15 | Buyer: MBCIE Procurement Dept Parkeutars Oty Price Veuve Bicycle Brake Pad Set Ww As 746,54 Fag. 12,798.38 \u2018Maid Retoase Agpet (4) 7 Ais 86.52 Re. 605.64 Bicycle Alloy Fim 266\" = Fi5. 696 38 is 22,960.54"
+}

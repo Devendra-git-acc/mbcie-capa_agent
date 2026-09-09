@@ -1,0 +1,22 @@
+# Task 1 (RCA agent) -- verified working combination as of Day 1
+langgraph==1.2.11
+langchain-openai==1.6.1
+langchain-core==1.6.2
+python-dotenv==1.2.2
+openai==3.9.0
+
+# Task 2 (document extraction) -- added Day 2
+pymupdf==1.28.2      # digital PDF text extraction + rendering pages to images
+pytesseract==0.3.13  # OCR for scanned documents -- needs the Tesseract binary
+                      # installed separately (not pip-installable), see README
+pillow==12.3.0
+numpy==2.2.6
+reportlab==5.0.1      # generate_docs.py only (synthetic test data) -- not used
+                      # by the extraction pipeline itself
+pydantic==2.13.5
+
+# API layer -- added Day 2
+fastapi==0.141.1
+uvicorn==0.52.4
+python-multipart==0.0.32  # required by FastAPI's UploadFile (POST /extract) -- easy to forget, not
+                          # imported directly anywhere, FastAPI just fails at request time without it

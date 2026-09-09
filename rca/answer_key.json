@@ -1,0 +1,145 @@
+{
+  "C001": {
+    "root_cause_category": "Equipment",
+    "root_cause": "Curing press (M02) temperature sensor calibration drifted low, producing under-cured tread and trapped-air blistering. Drift was undetected until the week 15 calibration check.",
+    "supporting_downtime_ids": [
+      "D0131"
+    ],
+    "supporting_shift_ids": [],
+    "notes": "Fix event happens AFTER the complaints -- agent should notice the calibration downtime record post-dates the batch and infer the drift was already present, not caused by the fix."
+  },
+  "C002": {
+    "root_cause_category": "Equipment",
+    "root_cause": "Curing press (M02) temperature sensor calibration drifted low, producing under-cured tread and trapped-air blistering. Drift was undetected until the week 15 calibration check.",
+    "supporting_downtime_ids": [
+      "D0131"
+    ],
+    "supporting_shift_ids": [],
+    "notes": "Fix event happens AFTER the complaints -- agent should notice the calibration downtime record post-dates the batch and infer the drift was already present, not caused by the fix."
+  },
+  "C003": {
+    "root_cause_category": "Equipment",
+    "root_cause": "Curing press (M02) temperature sensor calibration drifted low, producing under-cured tread and trapped-air blistering. Drift was undetected until the week 15 calibration check.",
+    "supporting_downtime_ids": [
+      "D0131"
+    ],
+    "supporting_shift_ids": [],
+    "notes": "Fix event happens AFTER the complaints -- agent should notice the calibration downtime record post-dates the batch and infer the drift was already present, not caused by the fix."
+  },
+  "C004": {
+    "root_cause_category": "Equipment",
+    "root_cause": "Curing press (M02) temperature sensor calibration drifted low, producing under-cured tread and trapped-air blistering. Drift was undetected until the week 15 calibration check.",
+    "supporting_downtime_ids": [
+      "D0131"
+    ],
+    "supporting_shift_ids": [],
+    "notes": "Fix event happens AFTER the complaints -- agent should notice the calibration downtime record post-dates the batch and infer the drift was already present, not caused by the fix."
+  },
+  "C005": {
+    "root_cause_category": "Human",
+    "root_cause": "Frame welding (M05) night shift in week 16 was staffed by a trainee operator (OP015, 2 months experience) with no senior sign-off logged. No mechanical or maintenance event on M05 that week.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [
+      "S0978",
+      "S0981"
+    ],
+    "notes": "No downtime anomaly at all -- the only signal is in shift data. Tests whether the agent keeps investigating after downtime comes back clean instead of stopping there."
+  },
+  "C006": {
+    "root_cause_category": "Human",
+    "root_cause": "Frame welding (M05) night shift in week 16 was staffed by a trainee operator (OP015, 2 months experience) with no senior sign-off logged. No mechanical or maintenance event on M05 that week.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [
+      "S0978",
+      "S0981"
+    ],
+    "notes": "No downtime anomaly at all -- the only signal is in shift data. Tests whether the agent keeps investigating after downtime comes back clean instead of stopping there."
+  },
+  "C007": {
+    "root_cause_category": "Human",
+    "root_cause": "Frame welding (M05) night shift in week 16 was staffed by a trainee operator (OP015, 2 months experience) with no senior sign-off logged. No mechanical or maintenance event on M05 that week.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [
+      "S0978",
+      "S0981"
+    ],
+    "notes": "No downtime anomaly at all -- the only signal is in shift data. Tests whether the agent keeps investigating after downtime comes back clean instead of stopping there."
+  },
+  "C008": {
+    "root_cause_category": "Material",
+    "root_cause": "Both M01 and M03 (different machines, different operators, no downtime events) produced affected batches in week 17, pointing to a shared input rather than a machine or operator issue -- consistent with a defective incoming rubber compound lot feeding both lines that week.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [],
+    "notes": "Single-machine investigation looks clean on both M01 and M03 individually. The signal only appears when comparing complaints ACROSS machines in the same week -- this is what the query_complaints tool is for."
+  },
+  "C009": {
+    "root_cause_category": "Material",
+    "root_cause": "Both M01 and M03 (different machines, different operators, no downtime events) produced affected batches in week 17, pointing to a shared input rather than a machine or operator issue -- consistent with a defective incoming rubber compound lot feeding both lines that week.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [],
+    "notes": "Single-machine investigation looks clean on both M01 and M03 individually. The signal only appears when comparing complaints ACROSS machines in the same week -- this is what the query_complaints tool is for."
+  },
+  "C010": {
+    "root_cause_category": "Material",
+    "root_cause": "Both M01 and M03 (different machines, different operators, no downtime events) produced affected batches in week 17, pointing to a shared input rather than a machine or operator issue -- consistent with a defective incoming rubber compound lot feeding both lines that week.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [],
+    "notes": "Single-machine investigation looks clean on both M01 and M03 individually. The signal only appears when comparing complaints ACROSS machines in the same week -- this is what the query_complaints tool is for."
+  },
+  "C011": {
+    "root_cause_category": "Material",
+    "root_cause": "Both M01 and M03 (different machines, different operators, no downtime events) produced affected batches in week 17, pointing to a shared input rather than a machine or operator issue -- consistent with a defective incoming rubber compound lot feeding both lines that week.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [],
+    "notes": "Single-machine investigation looks clean on both M01 and M03 individually. The signal only appears when comparing complaints ACROSS machines in the same week -- this is what the query_complaints tool is for."
+  },
+  "C012": {
+    "root_cause_category": "Equipment",
+    "root_cause": "Recurring low-severity complaints on M04 spread across 5 non-adjacent weeks, multiple different shifts and operators, with no discrete downtime or maintenance event and no shared material batch -- pattern is consistent with gradual mold wear rather than a single triggering event.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [],
+    "notes": "No single 'smoking gun' record -- root cause is inferred from the ABSENCE of a discrete cause plus a recurring pattern over time. Hardest of the four to get right."
+  },
+  "C013": {
+    "root_cause_category": "Equipment",
+    "root_cause": "Recurring low-severity complaints on M04 spread across 5 non-adjacent weeks, multiple different shifts and operators, with no discrete downtime or maintenance event and no shared material batch -- pattern is consistent with gradual mold wear rather than a single triggering event.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [],
+    "notes": "No single 'smoking gun' record -- root cause is inferred from the ABSENCE of a discrete cause plus a recurring pattern over time. Hardest of the four to get right."
+  },
+  "C014": {
+    "root_cause_category": "Equipment",
+    "root_cause": "Recurring low-severity complaints on M04 spread across 5 non-adjacent weeks, multiple different shifts and operators, with no discrete downtime or maintenance event and no shared material batch -- pattern is consistent with gradual mold wear rather than a single triggering event.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [],
+    "notes": "No single 'smoking gun' record -- root cause is inferred from the ABSENCE of a discrete cause plus a recurring pattern over time. Hardest of the four to get right."
+  },
+  "C015": {
+    "root_cause_category": "Equipment",
+    "root_cause": "Recurring low-severity complaints on M04 spread across 5 non-adjacent weeks, multiple different shifts and operators, with no discrete downtime or maintenance event and no shared material batch -- pattern is consistent with gradual mold wear rather than a single triggering event.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [],
+    "notes": "No single 'smoking gun' record -- root cause is inferred from the ABSENCE of a discrete cause plus a recurring pattern over time. Hardest of the four to get right."
+  },
+  "C016": {
+    "root_cause_category": "Equipment",
+    "root_cause": "Recurring low-severity complaints on M04 spread across 5 non-adjacent weeks, multiple different shifts and operators, with no discrete downtime or maintenance event and no shared material batch -- pattern is consistent with gradual mold wear rather than a single triggering event.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [],
+    "notes": "No single 'smoking gun' record -- root cause is inferred from the ABSENCE of a discrete cause plus a recurring pattern over time. Hardest of the four to get right."
+  },
+  "C017": {
+    "root_cause_category": "Insufficient evidence",
+    "root_cause": "No anomaly in downtime or shift records for M06 in week 18: experienced operator, no mechanical or maintenance events, no cross-machine pattern. The true cause (if any) sits outside these three sources -- most likely an incoming bearing lot defect, which this plant's systems don't track. Correct behaviour is to say so, not to force a plausible-sounding answer from complaints/downtime/shifts alone.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [],
+    "notes": "This is the deliberate red herring. Every source comes back clean by design."
+  },
+  "C018": {
+    "root_cause_category": "Insufficient evidence",
+    "root_cause": "No anomaly in downtime or shift records for M06 in week 18: experienced operator, no mechanical or maintenance events, no cross-machine pattern. The true cause (if any) sits outside these three sources -- most likely an incoming bearing lot defect, which this plant's systems don't track. Correct behaviour is to say so, not to force a plausible-sounding answer from complaints/downtime/shifts alone.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [],
+    "notes": "This is the deliberate red herring. Every source comes back clean by design."
+  }
+}

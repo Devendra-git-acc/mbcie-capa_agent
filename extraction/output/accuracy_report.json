@@ -1,0 +1,252 @@
+{
+  "total_ground_truth_docs": 10,
+  "compared": 10,
+  "extraction_failed": 0,
+  "not_yet_run": 0,
+  "fully_correct_docs": 7,
+  "per_field_accuracy": {
+    "doc_type": 1.0,
+    "doc_number": 0.9,
+    "doc_date": 1.0,
+    "vendor_name": 1.0,
+    "buyer_name": 0.9,
+    "currency": 0.9,
+    "subtotal": 0.8,
+    "tax_amount": 0.9,
+    "total_amount": 0.9,
+    "n_line_items": 1.0
+  },
+  "per_document": [
+    {
+      "doc_id": "D01",
+      "status": "compared",
+      "fields_checked": 10,
+      "fields_correct": 10,
+      "field_accuracy": {
+        "doc_type": true,
+        "doc_number": true,
+        "doc_date": true,
+        "vendor_name": true,
+        "buyer_name": true,
+        "currency": true,
+        "subtotal": true,
+        "tax_amount": true,
+        "total_amount": true,
+        "n_line_items": true
+      },
+      "mismatches": {},
+      "all_correct": true
+    },
+    {
+      "doc_id": "D02",
+      "status": "compared",
+      "fields_checked": 10,
+      "fields_correct": 10,
+      "field_accuracy": {
+        "doc_type": true,
+        "doc_number": true,
+        "doc_date": true,
+        "vendor_name": true,
+        "buyer_name": true,
+        "currency": true,
+        "subtotal": true,
+        "tax_amount": true,
+        "total_amount": true,
+        "n_line_items": true
+      },
+      "mismatches": {},
+      "all_correct": true
+    },
+    {
+      "doc_id": "D03",
+      "status": "compared",
+      "fields_checked": 10,
+      "fields_correct": 10,
+      "field_accuracy": {
+        "doc_type": true,
+        "doc_number": true,
+        "doc_date": true,
+        "vendor_name": true,
+        "buyer_name": true,
+        "currency": true,
+        "subtotal": true,
+        "tax_amount": true,
+        "total_amount": true,
+        "n_line_items": true
+      },
+      "mismatches": {},
+      "all_correct": true
+    },
+    {
+      "doc_id": "D04",
+      "status": "compared",
+      "fields_checked": 10,
+      "fields_correct": 9,
+      "field_accuracy": {
+        "doc_type": true,
+        "doc_number": true,
+        "doc_date": true,
+        "vendor_name": true,
+        "buyer_name": true,
+        "currency": true,
+        "subtotal": false,
+        "tax_amount": true,
+        "total_amount": true,
+        "n_line_items": true
+      },
+      "mismatches": {
+        "subtotal": {
+          "extracted": null,
+          "truth": 87204.37
+        }
+      },
+      "all_correct": false
+    },
+    {
+      "doc_id": "D05",
+      "status": "compared",
+      "fields_checked": 10,
+      "fields_correct": 10,
+      "field_accuracy": {
+        "doc_type": true,
+        "doc_number": true,
+        "doc_date": true,
+        "vendor_name": true,
+        "buyer_name": true,
+        "currency": true,
+        "subtotal": true,
+        "tax_amount": true,
+        "total_amount": true,
+        "n_line_items": true
+      },
+      "mismatches": {},
+      "all_correct": true
+    },
+    {
+      "doc_id": "D06",
+      "status": "compared",
+      "fields_checked": 10,
+      "fields_correct": 5,
+      "field_accuracy": {
+        "doc_type": true,
+        "doc_number": false,
+        "doc_date": true,
+        "vendor_name": true,
+        "buyer_name": false,
+        "currency": true,
+        "subtotal": false,
+        "tax_amount": false,
+        "total_amount": false,
+        "n_line_items": true
+      },
+      "mismatches": {
+        "doc_number": {
+          "extracted": "1N-2026-1095",
+          "truth": "IN-2026-1005"
+        },
+        "buyer_name": {
+          "extracted": "MBCIE Procurement Dept",
+          "truth": "MBCIE Procurement Dept."
+        },
+        "subtotal": {
+          "extracted": null,
+          "truth": 36304.56
+        },
+        "tax_amount": {
+          "extracted": null,
+          "truth": 6534.82
+        },
+        "total_amount": {
+          "extracted": 22960.54,
+          "truth": 42839.38
+        }
+      },
+      "all_correct": false
+    },
+    {
+      "doc_id": "D07",
+      "status": "compared",
+      "fields_checked": 10,
+      "fields_correct": 10,
+      "field_accuracy": {
+        "doc_type": true,
+        "doc_number": true,
+        "doc_date": true,
+        "vendor_name": true,
+        "buyer_name": true,
+        "currency": true,
+        "subtotal": true,
+        "tax_amount": true,
+        "total_amount": true,
+        "n_line_items": true
+      },
+      "mismatches": {},
+      "all_correct": true
+    },
+    {
+      "doc_id": "D08",
+      "status": "compared",
+      "fields_checked": 10,
+      "fields_correct": 10,
+      "field_accuracy": {
+        "doc_type": true,
+        "doc_number": true,
+        "doc_date": true,
+        "vendor_name": true,
+        "buyer_name": true,
+        "currency": true,
+        "subtotal": true,
+        "tax_amount": true,
+        "total_amount": true,
+        "n_line_items": true
+      },
+      "mismatches": {},
+      "all_correct": true
+    },
+    {
+      "doc_id": "D09",
+      "status": "compared",
+      "fields_checked": 10,
+      "fields_correct": 9,
+      "field_accuracy": {
+        "doc_type": true,
+        "doc_number": true,
+        "doc_date": true,
+        "vendor_name": true,
+        "buyer_name": true,
+        "currency": false,
+        "subtotal": true,
+        "tax_amount": true,
+        "total_amount": true,
+        "n_line_items": true
+      },
+      "mismatches": {
+        "currency": {
+          "extracted": "Rs.",
+          "truth": "INR"
+        }
+      },
+      "all_correct": false
+    },
+    {
+      "doc_id": "D10",
+      "status": "compared",
+      "fields_checked": 10,
+      "fields_correct": 10,
+      "field_accuracy": {
+        "doc_type": true,
+        "doc_number": true,
+        "doc_date": true,
+        "vendor_name": true,
+        "buyer_name": true,
+        "currency": true,
+        "subtotal": true,
+        "tax_amount": true,
+        "total_amount": true,
+        "n_line_items": true
+      },
+      "mismatches": {},
+      "all_correct": true
+    }
+  ]
+}

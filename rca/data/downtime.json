@@ -1,0 +1,1181 @@
+[
+  {
+    "downtime_id": "D0028",
+    "machine_id": "M02",
+    "date": "2026-03-02",
+    "shift": "night",
+    "duration_minutes": 60,
+    "reason_category": "Staffing",
+    "reason_detail": "Shift handover delay"
+  },
+  {
+    "downtime_id": "D0029",
+    "machine_id": "M02",
+    "date": "2026-03-02",
+    "shift": "night",
+    "duration_minutes": 30,
+    "reason_category": "Maintenance",
+    "reason_detail": "Scheduled PM"
+  },
+  {
+    "downtime_id": "D0047",
+    "machine_id": "M03",
+    "date": "2026-03-02",
+    "shift": "evening",
+    "duration_minutes": 45,
+    "reason_category": "Material",
+    "reason_detail": "Staging delay"
+  },
+  {
+    "downtime_id": "D0113",
+    "machine_id": "M06",
+    "date": "2026-03-04",
+    "shift": "morning",
+    "duration_minutes": 30,
+    "reason_category": "Maintenance",
+    "reason_detail": "Calibration check"
+  },
+  {
+    "downtime_id": "D0072",
+    "machine_id": "M04",
+    "date": "2026-03-05",
+    "shift": "night",
+    "duration_minutes": 30,
+    "reason_category": "Material",
+    "reason_detail": "Waiting on compound delivery"
+  },
+  {
+    "downtime_id": "D0001",
+    "machine_id": "M01",
+    "date": "2026-03-06",
+    "shift": "night",
+    "duration_minutes": 20,
+    "reason_category": "Setup",
+    "reason_detail": "First-article inspection"
+  },
+  {
+    "downtime_id": "D0048",
+    "machine_id": "M03",
+    "date": "2026-03-06",
+    "shift": "evening",
+    "duration_minutes": 20,
+    "reason_category": "Maintenance",
+    "reason_detail": "Calibration check"
+  },
+  {
+    "downtime_id": "D0002",
+    "machine_id": "M01",
+    "date": "2026-03-07",
+    "shift": "morning",
+    "duration_minutes": 45,
+    "reason_category": "Staffing",
+    "reason_detail": "Break coverage gap"
+  },
+  {
+    "downtime_id": "D0027",
+    "machine_id": "M02",
+    "date": "2026-03-07",
+    "shift": "evening",
+    "duration_minutes": 30,
+    "reason_category": "Material",
+    "reason_detail": "Waiting on compound delivery"
+  },
+  {
+    "downtime_id": "D0003",
+    "machine_id": "M01",
+    "date": "2026-03-08",
+    "shift": "morning",
+    "duration_minutes": 45,
+    "reason_category": "Setup",
+    "reason_detail": "Tooling change"
+  },
+  {
+    "downtime_id": "D0091",
+    "machine_id": "M05",
+    "date": "2026-03-08",
+    "shift": "night",
+    "duration_minutes": 45,
+    "reason_category": "Maintenance",
+    "reason_detail": "Part replacement"
+  },
+  {
+    "downtime_id": "D0005",
+    "machine_id": "M01",
+    "date": "2026-03-09",
+    "shift": "evening",
+    "duration_minutes": 15,
+    "reason_category": "Maintenance",
+    "reason_detail": "Scheduled PM"
+  },
+  {
+    "downtime_id": "D0030",
+    "machine_id": "M02",
+    "date": "2026-03-09",
+    "shift": "evening",
+    "duration_minutes": 30,
+    "reason_category": "Maintenance",
+    "reason_detail": "Part replacement"
+  },
+  {
+    "downtime_id": "D0050",
+    "machine_id": "M03",
+    "date": "2026-03-11",
+    "shift": "evening",
+    "duration_minutes": 20,
+    "reason_category": "Staffing",
+    "reason_detail": "Break coverage gap"
+  },
+  {
+    "downtime_id": "D0051",
+    "machine_id": "M03",
+    "date": "2026-03-11",
+    "shift": "evening",
+    "duration_minutes": 30,
+    "reason_category": "Material",
+    "reason_detail": "Staging delay"
+  },
+  {
+    "downtime_id": "D0049",
+    "machine_id": "M03",
+    "date": "2026-03-12",
+    "shift": "evening",
+    "duration_minutes": 20,
+    "reason_category": "Maintenance",
+    "reason_detail": "Scheduled PM"
+  },
+  {
+    "downtime_id": "D0073",
+    "machine_id": "M04",
+    "date": "2026-03-12",
+    "shift": "evening",
+    "duration_minutes": 30,
+    "reason_category": "Material",
+    "reason_detail": "Staging delay"
+  },
+  {
+    "downtime_id": "D0114",
+    "machine_id": "M06",
+    "date": "2026-03-12",
+    "shift": "evening",
+    "duration_minutes": 60,
+    "reason_category": "Setup",
+    "reason_detail": "Tooling change"
+  },
+  {
+    "downtime_id": "D0004",
+    "machine_id": "M01",
+    "date": "2026-03-13",
+    "shift": "night",
+    "duration_minutes": 20,
+    "reason_category": "Material",
+    "reason_detail": "Waiting on compound delivery"
+  },
+  {
+    "downtime_id": "D0092",
+    "machine_id": "M05",
+    "date": "2026-03-13",
+    "shift": "night",
+    "duration_minutes": 20,
+    "reason_category": "Material",
+    "reason_detail": "Waiting on compound delivery"
+  },
+  {
+    "downtime_id": "D0006",
+    "machine_id": "M01",
+    "date": "2026-03-15",
+    "shift": "evening",
+    "duration_minutes": 30,
+    "reason_category": "Setup",
+    "reason_detail": "Tooling change"
+  },
+  {
+    "downtime_id": "D0008",
+    "machine_id": "M01",
+    "date": "2026-03-17",
+    "shift": "evening",
+    "duration_minutes": 45,
+    "reason_category": "Setup",
+    "reason_detail": "Tooling change"
+  },
+  {
+    "downtime_id": "D0095",
+    "machine_id": "M05",
+    "date": "2026-03-18",
+    "shift": "night",
+    "duration_minutes": 30,
+    "reason_category": "Setup",
+    "reason_detail": "Batch changeover"
+  },
+  {
+    "downtime_id": "D0116",
+    "machine_id": "M06",
+    "date": "2026-03-18",
+    "shift": "evening",
+    "duration_minutes": 20,
+    "reason_category": "Maintenance",
+    "reason_detail": "Scheduled PM"
+  },
+  {
+    "downtime_id": "D0075",
+    "machine_id": "M04",
+    "date": "2026-03-20",
+    "shift": "night",
+    "duration_minutes": 45,
+    "reason_category": "Material",
+    "reason_detail": "Staging delay"
+  },
+  {
+    "downtime_id": "D0115",
+    "machine_id": "M06",
+    "date": "2026-03-20",
+    "shift": "evening",
+    "duration_minutes": 30,
+    "reason_category": "Setup",
+    "reason_detail": "First-article inspection"
+  },
+  {
+    "downtime_id": "D0007",
+    "machine_id": "M01",
+    "date": "2026-03-21",
+    "shift": "night",
+    "duration_minutes": 30,
+    "reason_category": "Maintenance",
+    "reason_detail": "Scheduled PM"
+  },
+  {
+    "downtime_id": "D0031",
+    "machine_id": "M02",
+    "date": "2026-03-21",
+    "shift": "night",
+    "duration_minutes": 45,
+    "reason_category": "Staffing",
+    "reason_detail": "Shift handover delay"
+  },
+  {
+    "downtime_id": "D0052",
+    "machine_id": "M03",
+    "date": "2026-03-21",
+    "shift": "night",
+    "duration_minutes": 20,
+    "reason_category": "Setup",
+    "reason_detail": "Tooling change"
+  },
+  {
+    "downtime_id": "D0053",
+    "machine_id": "M03",
+    "date": "2026-03-21",
+    "shift": "evening",
+    "duration_minutes": 20,
+    "reason_category": "Material",
+    "reason_detail": "Waiting on compound delivery"
+  },
+  {
+    "downtime_id": "D0093",
+    "machine_id": "M05",
+    "date": "2026-03-21",
+    "shift": "night",
+    "duration_minutes": 20,
+    "reason_category": "Staffing",
+    "reason_detail": "Break coverage gap"
+  },
+  {
+    "downtime_id": "D0094",
+    "machine_id": "M05",
+    "date": "2026-03-21",
+    "shift": "evening",
+    "duration_minutes": 60,
+    "reason_category": "Setup",
+    "reason_detail": "Tooling change"
+  },
+  {
+    "downtime_id": "D0074",
+    "machine_id": "M04",
+    "date": "2026-03-22",
+    "shift": "evening",
+    "duration_minutes": 15,
+    "reason_category": "Staffing",
+    "reason_detail": "Shift handover delay"
+  },
+  {
+    "downtime_id": "D0076",
+    "machine_id": "M04",
+    "date": "2026-03-22",
+    "shift": "morning",
+    "duration_minutes": 30,
+    "reason_category": "Setup",
+    "reason_detail": "First-article inspection"
+  },
+  {
+    "downtime_id": "D0096",
+    "machine_id": "M05",
+    "date": "2026-03-23",
+    "shift": "evening",
+    "duration_minutes": 20,
+    "reason_category": "Setup",
+    "reason_detail": "Batch changeover"
+  },
+  {
+    "downtime_id": "D0032",
+    "machine_id": "M02",
+    "date": "2026-03-25",
+    "shift": "night",
+    "duration_minutes": 20,
+    "reason_category": "Staffing",
+    "reason_detail": "Shift handover delay"
+  },
+  {
+    "downtime_id": "D0009",
+    "machine_id": "M01",
+    "date": "2026-03-27",
+    "shift": "evening",
+    "duration_minutes": 20,
+    "reason_category": "Staffing",
+    "reason_detail": "Shift handover delay"
+  },
+  {
+    "downtime_id": "D0010",
+    "machine_id": "M01",
+    "date": "2026-03-27",
+    "shift": "morning",
+    "duration_minutes": 15,
+    "reason_category": "Staffing",
+    "reason_detail": "Shift handover delay"
+  },
+  {
+    "downtime_id": "D0055",
+    "machine_id": "M03",
+    "date": "2026-03-27",
+    "shift": "night",
+    "duration_minutes": 30,
+    "reason_category": "Staffing",
+    "reason_detail": "Shift handover delay"
+  },
+  {
+    "downtime_id": "D0056",
+    "machine_id": "M03",
+    "date": "2026-03-27",
+    "shift": "morning",
+    "duration_minutes": 45,
+    "reason_category": "Material",
+    "reason_detail": "Staging delay"
+  },
+  {
+    "downtime_id": "D0098",
+    "machine_id": "M05",
+    "date": "2026-03-27",
+    "shift": "morning",
+    "duration_minutes": 30,
+    "reason_category": "Maintenance",
+    "reason_detail": "Scheduled PM"
+  },
+  {
+    "downtime_id": "D0077",
+    "machine_id": "M04",
+    "date": "2026-03-28",
+    "shift": "evening",
+    "duration_minutes": 30,
+    "reason_category": "Maintenance",
+    "reason_detail": "Part replacement"
+  },
+  {
+    "downtime_id": "D0054",
+    "machine_id": "M03",
+    "date": "2026-03-29",
+    "shift": "night",
+    "duration_minutes": 15,
+    "reason_category": "Setup",
+    "reason_detail": "Tooling change"
+  },
+  {
+    "downtime_id": "D0097",
+    "machine_id": "M05",
+    "date": "2026-03-29",
+    "shift": "morning",
+    "duration_minutes": 60,
+    "reason_category": "Maintenance",
+    "reason_detail": "Scheduled PM"
+  },
+  {
+    "downtime_id": "D0117",
+    "machine_id": "M06",
+    "date": "2026-03-29",
+    "shift": "evening",
+    "duration_minutes": 60,
+    "reason_category": "Staffing",
+    "reason_detail": "Break coverage gap"
+  },
+  {
+    "downtime_id": "D0034",
+    "machine_id": "M02",
+    "date": "2026-03-31",
+    "shift": "evening",
+    "duration_minutes": 30,
+    "reason_category": "Staffing",
+    "reason_detail": "Shift handover delay"
+  },
+  {
+    "downtime_id": "D0058",
+    "machine_id": "M03",
+    "date": "2026-03-31",
+    "shift": "night",
+    "duration_minutes": 60,
+    "reason_category": "Staffing",
+    "reason_detail": "Break coverage gap"
+  },
+  {
+    "downtime_id": "D0011",
+    "machine_id": "M01",
+    "date": "2026-04-01",
+    "shift": "evening",
+    "duration_minutes": 45,
+    "reason_category": "Setup",
+    "reason_detail": "Batch changeover"
+  },
+  {
+    "downtime_id": "D0033",
+    "machine_id": "M02",
+    "date": "2026-04-01",
+    "shift": "morning",
+    "duration_minutes": 15,
+    "reason_category": "Maintenance",
+    "reason_detail": "Part replacement"
+  },
+  {
+    "downtime_id": "D0078",
+    "machine_id": "M04",
+    "date": "2026-04-01",
+    "shift": "night",
+    "duration_minutes": 60,
+    "reason_category": "Material",
+    "reason_detail": "Staging delay"
+  },
+  {
+    "downtime_id": "D0012",
+    "machine_id": "M01",
+    "date": "2026-04-02",
+    "shift": "night",
+    "duration_minutes": 30,
+    "reason_category": "Setup",
+    "reason_detail": "First-article inspection"
+  },
+  {
+    "downtime_id": "D0118",
+    "machine_id": "M06",
+    "date": "2026-04-02",
+    "shift": "morning",
+    "duration_minutes": 15,
+    "reason_category": "Staffing",
+    "reason_detail": "Break coverage gap"
+  },
+  {
+    "downtime_id": "D0099",
+    "machine_id": "M05",
+    "date": "2026-04-04",
+    "shift": "night",
+    "duration_minutes": 15,
+    "reason_category": "Staffing",
+    "reason_detail": "Shift handover delay"
+  },
+  {
+    "downtime_id": "D0013",
+    "machine_id": "M01",
+    "date": "2026-04-05",
+    "shift": "night",
+    "duration_minutes": 15,
+    "reason_category": "Maintenance",
+    "reason_detail": "Part replacement"
+  },
+  {
+    "downtime_id": "D0057",
+    "machine_id": "M03",
+    "date": "2026-04-05",
+    "shift": "morning",
+    "duration_minutes": 30,
+    "reason_category": "Maintenance",
+    "reason_detail": "Calibration check"
+  },
+  {
+    "downtime_id": "D0119",
+    "machine_id": "M06",
+    "date": "2026-04-05",
+    "shift": "morning",
+    "duration_minutes": 15,
+    "reason_category": "Material",
+    "reason_detail": "Staging delay"
+  },
+  {
+    "downtime_id": "D0014",
+    "machine_id": "M01",
+    "date": "2026-04-06",
+    "shift": "night",
+    "duration_minutes": 45,
+    "reason_category": "Setup",
+    "reason_detail": "Batch changeover"
+  },
+  {
+    "downtime_id": "D0080",
+    "machine_id": "M04",
+    "date": "2026-04-06",
+    "shift": "night",
+    "duration_minutes": 60,
+    "reason_category": "Staffing",
+    "reason_detail": "Shift handover delay"
+  },
+  {
+    "downtime_id": "D0101",
+    "machine_id": "M05",
+    "date": "2026-04-06",
+    "shift": "night",
+    "duration_minutes": 20,
+    "reason_category": "Material",
+    "reason_detail": "Waiting on compound delivery"
+  },
+  {
+    "downtime_id": "D0016",
+    "machine_id": "M01",
+    "date": "2026-04-07",
+    "shift": "night",
+    "duration_minutes": 60,
+    "reason_category": "Material",
+    "reason_detail": "Staging delay"
+  },
+  {
+    "downtime_id": "D0131",
+    "machine_id": "M02",
+    "date": "2026-04-07",
+    "shift": "evening",
+    "duration_minutes": 90,
+    "reason_category": "Maintenance",
+    "reason_detail": "Calibration check - curing press temperature sensor recalibrated after drift found"
+  },
+  {
+    "downtime_id": "D0120",
+    "machine_id": "M06",
+    "date": "2026-04-07",
+    "shift": "morning",
+    "duration_minutes": 45,
+    "reason_category": "Setup",
+    "reason_detail": "Tooling change"
+  },
+  {
+    "downtime_id": "D0036",
+    "machine_id": "M02",
+    "date": "2026-04-08",
+    "shift": "night",
+    "duration_minutes": 45,
+    "reason_category": "Setup",
+    "reason_detail": "Batch changeover"
+  },
+  {
+    "downtime_id": "D0059",
+    "machine_id": "M03",
+    "date": "2026-04-09",
+    "shift": "night",
+    "duration_minutes": 45,
+    "reason_category": "Maintenance",
+    "reason_detail": "Part replacement"
+  },
+  {
+    "downtime_id": "D0122",
+    "machine_id": "M06",
+    "date": "2026-04-09",
+    "shift": "evening",
+    "duration_minutes": 60,
+    "reason_category": "Staffing",
+    "reason_detail": "Shift handover delay"
+  },
+  {
+    "downtime_id": "D0035",
+    "machine_id": "M02",
+    "date": "2026-04-10",
+    "shift": "evening",
+    "duration_minutes": 60,
+    "reason_category": "Setup",
+    "reason_detail": "Batch changeover"
+  },
+  {
+    "downtime_id": "D0121",
+    "machine_id": "M06",
+    "date": "2026-04-10",
+    "shift": "evening",
+    "duration_minutes": 30,
+    "reason_category": "Maintenance",
+    "reason_detail": "Calibration check"
+  },
+  {
+    "downtime_id": "D0060",
+    "machine_id": "M03",
+    "date": "2026-04-11",
+    "shift": "evening",
+    "duration_minutes": 15,
+    "reason_category": "Staffing",
+    "reason_detail": "Shift handover delay"
+  },
+  {
+    "downtime_id": "D0079",
+    "machine_id": "M04",
+    "date": "2026-04-11",
+    "shift": "evening",
+    "duration_minutes": 20,
+    "reason_category": "Staffing",
+    "reason_detail": "Break coverage gap"
+  },
+  {
+    "downtime_id": "D0100",
+    "machine_id": "M05",
+    "date": "2026-04-11",
+    "shift": "evening",
+    "duration_minutes": 45,
+    "reason_category": "Setup",
+    "reason_detail": "Batch changeover"
+  },
+  {
+    "downtime_id": "D0015",
+    "machine_id": "M01",
+    "date": "2026-04-12",
+    "shift": "morning",
+    "duration_minutes": 45,
+    "reason_category": "Maintenance",
+    "reason_detail": "Part replacement"
+  },
+  {
+    "downtime_id": "D0062",
+    "machine_id": "M03",
+    "date": "2026-04-13",
+    "shift": "morning",
+    "duration_minutes": 20,
+    "reason_category": "Maintenance",
+    "reason_detail": "Part replacement"
+  },
+  {
+    "downtime_id": "D0017",
+    "machine_id": "M01",
+    "date": "2026-04-14",
+    "shift": "morning",
+    "duration_minutes": 15,
+    "reason_category": "Maintenance",
+    "reason_detail": "Part replacement"
+  },
+  {
+    "downtime_id": "D0038",
+    "machine_id": "M02",
+    "date": "2026-04-14",
+    "shift": "night",
+    "duration_minutes": 45,
+    "reason_category": "Staffing",
+    "reason_detail": "Shift handover delay"
+  },
+  {
+    "downtime_id": "D0061",
+    "machine_id": "M03",
+    "date": "2026-04-15",
+    "shift": "morning",
+    "duration_minutes": 20,
+    "reason_category": "Maintenance",
+    "reason_detail": "Calibration check"
+  },
+  {
+    "downtime_id": "D0124",
+    "machine_id": "M06",
+    "date": "2026-04-15",
+    "shift": "night",
+    "duration_minutes": 30,
+    "reason_category": "Staffing",
+    "reason_detail": "Shift handover delay"
+  },
+  {
+    "downtime_id": "D0037",
+    "machine_id": "M02",
+    "date": "2026-04-16",
+    "shift": "evening",
+    "duration_minutes": 30,
+    "reason_category": "Material",
+    "reason_detail": "Waiting on compound delivery"
+  },
+  {
+    "downtime_id": "D0103",
+    "machine_id": "M05",
+    "date": "2026-04-16",
+    "shift": "evening",
+    "duration_minutes": 45,
+    "reason_category": "Material",
+    "reason_detail": "Staging delay"
+  },
+  {
+    "downtime_id": "D0039",
+    "machine_id": "M02",
+    "date": "2026-04-17",
+    "shift": "evening",
+    "duration_minutes": 60,
+    "reason_category": "Material",
+    "reason_detail": "Waiting on compound delivery"
+  },
+  {
+    "downtime_id": "D0082",
+    "machine_id": "M04",
+    "date": "2026-04-17",
+    "shift": "morning",
+    "duration_minutes": 30,
+    "reason_category": "Setup",
+    "reason_detail": "Batch changeover"
+  },
+  {
+    "downtime_id": "D0018",
+    "machine_id": "M01",
+    "date": "2026-04-18",
+    "shift": "morning",
+    "duration_minutes": 15,
+    "reason_category": "Setup",
+    "reason_detail": "Batch changeover"
+  },
+  {
+    "downtime_id": "D0083",
+    "machine_id": "M04",
+    "date": "2026-04-18",
+    "shift": "evening",
+    "duration_minutes": 15,
+    "reason_category": "Setup",
+    "reason_detail": "First-article inspection"
+  },
+  {
+    "downtime_id": "D0102",
+    "machine_id": "M05",
+    "date": "2026-04-18",
+    "shift": "evening",
+    "duration_minutes": 45,
+    "reason_category": "Maintenance",
+    "reason_detail": "Scheduled PM"
+  },
+  {
+    "downtime_id": "D0104",
+    "machine_id": "M05",
+    "date": "2026-04-18",
+    "shift": "evening",
+    "duration_minutes": 45,
+    "reason_category": "Setup",
+    "reason_detail": "Tooling change"
+  },
+  {
+    "downtime_id": "D0123",
+    "machine_id": "M06",
+    "date": "2026-04-18",
+    "shift": "morning",
+    "duration_minutes": 60,
+    "reason_category": "Staffing",
+    "reason_detail": "Shift handover delay"
+  },
+  {
+    "downtime_id": "D0019",
+    "machine_id": "M01",
+    "date": "2026-04-19",
+    "shift": "morning",
+    "duration_minutes": 60,
+    "reason_category": "Material",
+    "reason_detail": "Waiting on compound delivery"
+  },
+  {
+    "downtime_id": "D0081",
+    "machine_id": "M04",
+    "date": "2026-04-19",
+    "shift": "evening",
+    "duration_minutes": 45,
+    "reason_category": "Staffing",
+    "reason_detail": "Shift handover delay"
+  },
+  {
+    "downtime_id": "D0125",
+    "machine_id": "M06",
+    "date": "2026-04-20",
+    "shift": "morning",
+    "duration_minutes": 60,
+    "reason_category": "Material",
+    "reason_detail": "Waiting on compound delivery"
+  },
+  {
+    "downtime_id": "D0041",
+    "machine_id": "M02",
+    "date": "2026-04-21",
+    "shift": "morning",
+    "duration_minutes": 15,
+    "reason_category": "Maintenance",
+    "reason_detail": "Scheduled PM"
+  },
+  {
+    "downtime_id": "D0042",
+    "machine_id": "M02",
+    "date": "2026-04-21",
+    "shift": "night",
+    "duration_minutes": 15,
+    "reason_category": "Staffing",
+    "reason_detail": "Break coverage gap"
+  },
+  {
+    "downtime_id": "D0084",
+    "machine_id": "M04",
+    "date": "2026-04-21",
+    "shift": "night",
+    "duration_minutes": 45,
+    "reason_category": "Setup",
+    "reason_detail": "First-article inspection"
+  },
+  {
+    "downtime_id": "D0063",
+    "machine_id": "M03",
+    "date": "2026-04-22",
+    "shift": "night",
+    "duration_minutes": 45,
+    "reason_category": "Maintenance",
+    "reason_detail": "Scheduled PM"
+  },
+  {
+    "downtime_id": "D0021",
+    "machine_id": "M01",
+    "date": "2026-04-23",
+    "shift": "morning",
+    "duration_minutes": 20,
+    "reason_category": "Material",
+    "reason_detail": "Waiting on compound delivery"
+  },
+  {
+    "downtime_id": "D0065",
+    "machine_id": "M03",
+    "date": "2026-04-23",
+    "shift": "evening",
+    "duration_minutes": 20,
+    "reason_category": "Staffing",
+    "reason_detail": "Shift handover delay"
+  },
+  {
+    "downtime_id": "D0040",
+    "machine_id": "M02",
+    "date": "2026-04-25",
+    "shift": "morning",
+    "duration_minutes": 20,
+    "reason_category": "Material",
+    "reason_detail": "Staging delay"
+  },
+  {
+    "downtime_id": "D0105",
+    "machine_id": "M05",
+    "date": "2026-04-25",
+    "shift": "evening",
+    "duration_minutes": 30,
+    "reason_category": "Setup",
+    "reason_detail": "First-article inspection"
+  },
+  {
+    "downtime_id": "D0020",
+    "machine_id": "M01",
+    "date": "2026-04-26",
+    "shift": "night",
+    "duration_minutes": 15,
+    "reason_category": "Setup",
+    "reason_detail": "Batch changeover"
+  },
+  {
+    "downtime_id": "D0064",
+    "machine_id": "M03",
+    "date": "2026-04-26",
+    "shift": "night",
+    "duration_minutes": 30,
+    "reason_category": "Setup",
+    "reason_detail": "Tooling change"
+  },
+  {
+    "downtime_id": "D0106",
+    "machine_id": "M05",
+    "date": "2026-04-26",
+    "shift": "night",
+    "duration_minutes": 15,
+    "reason_category": "Staffing",
+    "reason_detail": "Break coverage gap"
+  },
+  {
+    "downtime_id": "D0087",
+    "machine_id": "M04",
+    "date": "2026-04-27",
+    "shift": "evening",
+    "duration_minutes": 60,
+    "reason_category": "Staffing",
+    "reason_detail": "Shift handover delay"
+  },
+  {
+    "downtime_id": "D0108",
+    "machine_id": "M05",
+    "date": "2026-04-28",
+    "shift": "night",
+    "duration_minutes": 30,
+    "reason_category": "Material",
+    "reason_detail": "Staging delay"
+  },
+  {
+    "downtime_id": "D0085",
+    "machine_id": "M04",
+    "date": "2026-04-29",
+    "shift": "night",
+    "duration_minutes": 30,
+    "reason_category": "Staffing",
+    "reason_detail": "Break coverage gap"
+  },
+  {
+    "downtime_id": "D0109",
+    "machine_id": "M05",
+    "date": "2026-04-29",
+    "shift": "morning",
+    "duration_minutes": 20,
+    "reason_category": "Setup",
+    "reason_detail": "First-article inspection"
+  },
+  {
+    "downtime_id": "D0126",
+    "machine_id": "M06",
+    "date": "2026-04-29",
+    "shift": "morning",
+    "duration_minutes": 60,
+    "reason_category": "Staffing",
+    "reason_detail": "Shift handover delay"
+  },
+  {
+    "downtime_id": "D0127",
+    "machine_id": "M06",
+    "date": "2026-04-29",
+    "shift": "morning",
+    "duration_minutes": 30,
+    "reason_category": "Staffing",
+    "reason_detail": "Break coverage gap"
+  },
+  {
+    "downtime_id": "D0022",
+    "machine_id": "M01",
+    "date": "2026-04-30",
+    "shift": "evening",
+    "duration_minutes": 15,
+    "reason_category": "Maintenance",
+    "reason_detail": "Scheduled PM"
+  },
+  {
+    "downtime_id": "D0023",
+    "machine_id": "M01",
+    "date": "2026-04-30",
+    "shift": "evening",
+    "duration_minutes": 30,
+    "reason_category": "Setup",
+    "reason_detail": "Tooling change"
+  },
+  {
+    "downtime_id": "D0067",
+    "machine_id": "M03",
+    "date": "2026-04-30",
+    "shift": "night",
+    "duration_minutes": 45,
+    "reason_category": "Material",
+    "reason_detail": "Staging delay"
+  },
+  {
+    "downtime_id": "D0128",
+    "machine_id": "M06",
+    "date": "2026-04-30",
+    "shift": "evening",
+    "duration_minutes": 60,
+    "reason_category": "Material",
+    "reason_detail": "Staging delay"
+  },
+  {
+    "downtime_id": "D0043",
+    "machine_id": "M02",
+    "date": "2026-05-01",
+    "shift": "morning",
+    "duration_minutes": 45,
+    "reason_category": "Maintenance",
+    "reason_detail": "Scheduled PM"
+  },
+  {
+    "downtime_id": "D0068",
+    "machine_id": "M03",
+    "date": "2026-05-01",
+    "shift": "night",
+    "duration_minutes": 15,
+    "reason_category": "Setup",
+    "reason_detail": "Batch changeover"
+  },
+  {
+    "downtime_id": "D0107",
+    "machine_id": "M05",
+    "date": "2026-05-01",
+    "shift": "night",
+    "duration_minutes": 30,
+    "reason_category": "Setup",
+    "reason_detail": "Batch changeover"
+  },
+  {
+    "downtime_id": "D0066",
+    "machine_id": "M03",
+    "date": "2026-05-03",
+    "shift": "night",
+    "duration_minutes": 45,
+    "reason_category": "Staffing",
+    "reason_detail": "Shift handover delay"
+  },
+  {
+    "downtime_id": "D0086",
+    "machine_id": "M04",
+    "date": "2026-05-03",
+    "shift": "morning",
+    "duration_minutes": 45,
+    "reason_category": "Material",
+    "reason_detail": "Staging delay"
+  },
+  {
+    "downtime_id": "D0110",
+    "machine_id": "M05",
+    "date": "2026-05-04",
+    "shift": "morning",
+    "duration_minutes": 20,
+    "reason_category": "Setup",
+    "reason_detail": "First-article inspection"
+  },
+  {
+    "downtime_id": "D0111",
+    "machine_id": "M05",
+    "date": "2026-05-04",
+    "shift": "evening",
+    "duration_minutes": 45,
+    "reason_category": "Setup",
+    "reason_detail": "First-article inspection"
+  },
+  {
+    "downtime_id": "D0129",
+    "machine_id": "M06",
+    "date": "2026-05-04",
+    "shift": "evening",
+    "duration_minutes": 30,
+    "reason_category": "Maintenance",
+    "reason_detail": "Scheduled PM"
+  },
+  {
+    "downtime_id": "D0071",
+    "machine_id": "M03",
+    "date": "2026-05-05",
+    "shift": "evening",
+    "duration_minutes": 20,
+    "reason_category": "Maintenance",
+    "reason_detail": "Scheduled PM"
+  },
+  {
+    "downtime_id": "D0088",
+    "machine_id": "M04",
+    "date": "2026-05-05",
+    "shift": "night",
+    "duration_minutes": 20,
+    "reason_category": "Material",
+    "reason_detail": "Waiting on compound delivery"
+  },
+  {
+    "downtime_id": "D0046",
+    "machine_id": "M02",
+    "date": "2026-05-06",
+    "shift": "morning",
+    "duration_minutes": 20,
+    "reason_category": "Setup",
+    "reason_detail": "Batch changeover"
+  },
+  {
+    "downtime_id": "D0069",
+    "machine_id": "M03",
+    "date": "2026-05-06",
+    "shift": "morning",
+    "duration_minutes": 20,
+    "reason_category": "Staffing",
+    "reason_detail": "Break coverage gap"
+  },
+  {
+    "downtime_id": "D0024",
+    "machine_id": "M01",
+    "date": "2026-05-07",
+    "shift": "morning",
+    "duration_minutes": 60,
+    "reason_category": "Maintenance",
+    "reason_detail": "Scheduled PM"
+  },
+  {
+    "downtime_id": "D0044",
+    "machine_id": "M02",
+    "date": "2026-05-07",
+    "shift": "evening",
+    "duration_minutes": 45,
+    "reason_category": "Maintenance",
+    "reason_detail": "Scheduled PM"
+  },
+  {
+    "downtime_id": "D0112",
+    "machine_id": "M05",
+    "date": "2026-05-07",
+    "shift": "night",
+    "duration_minutes": 45,
+    "reason_category": "Staffing",
+    "reason_detail": "Break coverage gap"
+  },
+  {
+    "downtime_id": "D0130",
+    "machine_id": "M06",
+    "date": "2026-05-07",
+    "shift": "evening",
+    "duration_minutes": 60,
+    "reason_category": "Setup",
+    "reason_detail": "Tooling change"
+  },
+  {
+    "downtime_id": "D0090",
+    "machine_id": "M04",
+    "date": "2026-05-08",
+    "shift": "night",
+    "duration_minutes": 20,
+    "reason_category": "Material",
+    "reason_detail": "Waiting on compound delivery"
+  },
+  {
+    "downtime_id": "D0026",
+    "machine_id": "M01",
+    "date": "2026-05-09",
+    "shift": "evening",
+    "duration_minutes": 15,
+    "reason_category": "Maintenance",
+    "reason_detail": "Part replacement"
+  },
+  {
+    "downtime_id": "D0045",
+    "machine_id": "M02",
+    "date": "2026-05-09",
+    "shift": "morning",
+    "duration_minutes": 30,
+    "reason_category": "Material",
+    "reason_detail": "Staging delay"
+  },
+  {
+    "downtime_id": "D0089",
+    "machine_id": "M04",
+    "date": "2026-05-09",
+    "shift": "evening",
+    "duration_minutes": 45,
+    "reason_category": "Setup",
+    "reason_detail": "Batch changeover"
+  },
+  {
+    "downtime_id": "D0025",
+    "machine_id": "M01",
+    "date": "2026-05-10",
+    "shift": "morning",
+    "duration_minutes": 60,
+    "reason_category": "Maintenance",
+    "reason_detail": "Scheduled PM"
+  },
+  {
+    "downtime_id": "D0070",
+    "machine_id": "M03",
+    "date": "2026-05-10",
+    "shift": "evening",
+    "duration_minutes": 15,
+    "reason_category": "Maintenance",
+    "reason_detail": "Part replacement"
+  }
+]

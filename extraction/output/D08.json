@@ -1,0 +1,67 @@
+{
+  "doc_id": "D08",
+  "format": "digital",
+  "files": [
+    "D08.pdf"
+  ],
+  "extraction_failed": false,
+  "extracted": {
+    "doc_type": "purchase_order",
+    "doc_number": "PU-2026-1007",
+    "doc_date": "2026-08-17",
+    "vendor_name": "Sunrise Industrial Supplies",
+    "buyer_name": "MBCIE Procurement Dept.",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Bicycle Brake Pad Set",
+        "quantity": 59.0,
+        "unit_price": 447.18,
+        "line_total": 26383.62
+      },
+      {
+        "description": "Wheel Bearing Assembly",
+        "quantity": 9.0,
+        "unit_price": 222.0,
+        "line_total": 1998.0
+      },
+      {
+        "description": "Tyre Sidewall Label Set",
+        "quantity": 6.0,
+        "unit_price": 297.3,
+        "line_total": 1783.8
+      },
+      {
+        "description": "Mold Release Agent (5L)",
+        "quantity": 39.0,
+        "unit_price": 477.52,
+        "line_total": 18623.28
+      }
+    ],
+    "subtotal": 48788.7,
+    "tax_amount": 8781.97,
+    "total_amount": 57570.67
+  },
+  "confidence": {
+    "source_confidence": 0.98,
+    "completeness": 1.0,
+    "arithmetic_consistent": true,
+    "overall_confidence": 0.991,
+    "needs_review": false,
+    "review_reasons": []
+  },
+  "token_usage": {
+    "input_tokens": 752,
+    "output_tokens": 184,
+    "total_tokens": 936,
+    "input_token_details": {
+      "audio": 0,
+      "cache_read": 0
+    },
+    "output_token_details": {
+      "audio": 0,
+      "reasoning": 0
+    }
+  },
+  "raw_text_excerpt": "Purchase Order\nOrder Ref: PU-2026-1007 -- Dated 2026-08-17\nSupplier: Sunrise Industrial Supplies -- For: MBCIE Procurement Dept.\nItems ordered:\n1. Bicycle Brake Pad Set \u00d7 59 @ Rs.447.18 = Rs.26,383.62\n2. Wheel Bearing Assembly \u00d7 9 @ Rs.222.00 = Rs.1,998.00\n3. Tyre Sidewall Label Set \u00d7 6 @ Rs.297.30 = Rs.1,783.80\n4. Mold Release Agent (5L) \u00d7 39 @ Rs.477.52 = Rs.18,623.28\nSubtotal Rs.48,788.70, tax Rs.8,781.97, total due Rs.57,570.67.\n"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_size": 10,
+  "sample_doc_ids": [
+    "D01",
+    "D02",
+    "D03",
+    "D04",
+    "D05",
+    "D06",
+    "D07",
+    "D08",
+    "D09",
+    "D10"
+  ],
+  "note": "All 10/10 fixture documents.",
+  "avg_input_tokens_per_doc": 900.4,
+  "avg_output_tokens_per_doc_as_measured": 379.4,
+  "avg_reasoning_tokens_per_doc": 0.0,
+  "reasoning_share_of_output": 0.0,
+  "avg_line_items_per_doc": 10.4,
+  "pricing_used": "gpt-4o-mini, $0.15/1M input + $0.60/1M output (platform.openai.com/docs/pricing)",
+  "estimated_cost_per_1000_docs": {
+    "as_measured_incl_reasoning_overhead": 0.3627,
+    "realistic_excl_reasoning_overhead": 0.3627
+  },
+  "cost_reduction_idea": "Stop asking the model to emit line_total per line item -- it's pure arithmetic (quantity * unit_price), already computed in Python by generate_docs.py/known from the two other fields, and costs real output tokens for no accuracy benefit (an LLM's multiplication isn't more trustworthy than code doing it directly). At 10.4 line items/doc average in this run, that's a meaningful fraction of the ~10 extra numeric tokens per document going toward a field the pipeline could derive itself post-hoc instead of paying the model to produce it -- proportionally larger for the longer multi-page invoices (this run's worst case had 35 line items) where output-token cost scales with item count."
+}

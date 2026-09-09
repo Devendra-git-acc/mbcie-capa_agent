@@ -1,0 +1,254 @@
+{
+  "doc_id": "D09",
+  "format": "scanned",
+  "files": [
+    "D09_p1.jpg",
+    "D09_p2.jpg"
+  ],
+  "extraction_failed": false,
+  "extracted": {
+    "doc_type": "invoice",
+    "doc_number": "IN-2026-1008",
+    "doc_date": "2026-09-18",
+    "vendor_name": "Shree Balaji Rubber Industries",
+    "buyer_name": "MBCIE Tyre & Cycle Plant",
+    "currency": "Rs.",
+    "line_items": [
+      {
+        "description": "Mold Release Agent (SL)",
+        "quantity": 10.0,
+        "unit_price": 367.27,
+        "line_total": 3672.7
+      },
+      {
+        "description": "Steel Racial Tyre 175/65 Ria",
+        "quantity": 19.0,
+        "unit_price": 401.29,
+        "line_total": 7624.51
+      },
+      {
+        "description": "Curing Press Gasket Kit",
+        "quantity": 57.0,
+        "unit_price": 785.93,
+        "line_total": 44798.01
+      },
+      {
+        "description": "Tyre Sidewall Label Set",
+        "quantity": 30.0,
+        "unit_price": 689.7,
+        "line_total": 20691.0
+      },
+      {
+        "description": "Carbon Black Filler (bag)",
+        "quantity": 56.0,
+        "unit_price": 474.52,
+        "line_total": 26573.12
+      },
+      {
+        "description": "Tyre Repair Patch Kit",
+        "quantity": 4.0,
+        "unit_price": 559.54,
+        "line_total": 2797.7
+      },
+      {
+        "description": "Tyre Valve Stem (pack of 50)",
+        "quantity": 36.0,
+        "unit_price": 713.08,
+        "line_total": 25670.88
+      },
+      {
+        "description": "Bicycle Alloy Rim 26in",
+        "quantity": 1.0,
+        "unit_price": 788.52,
+        "line_total": 5519.64
+      },
+      {
+        "description": "Wheel Bearing Assembly",
+        "quantity": 56.0,
+        "unit_price": 212.38,
+        "line_total": 11893.28
+      },
+      {
+        "description": "Rubber Compound Batch (25kg)",
+        "quantity": 28.0,
+        "unit_price": 420.51,
+        "line_total": 11774.28
+      },
+      {
+        "description": "Vuleanizing Solution (1L)",
+        "quantity": 15.0,
+        "unit_price": 736.98,
+        "line_total": 11054.7
+      },
+      {
+        "description": "Bead Wire Coil 2.5mm",
+        "quantity": 59.0,
+        "unit_price": 63.96,
+        "line_total": 3773.64
+      },
+      {
+        "description": "Bicycle Pedal Pair",
+        "quantity": 26.0,
+        "unit_price": 16.8,
+        "line_total": 436.8
+      },
+      {
+        "description": "Nylon Cord Fabric Roll",
+        "quantity": 26.0,
+        "unit_price": 236.44,
+        "line_total": 6147.44
+      },
+      {
+        "description": "Bicycle Spoke Set (36pc)",
+        "quantity": 52.0,
+        "unit_price": 670.58,
+        "line_total": 34870.16
+      },
+      {
+        "description": "Bicycle Brake Pad Set",
+        "quantity": 20.0,
+        "unit_price": 368.21,
+        "line_total": 7364.2
+      },
+      {
+        "description": "Bicycle Chain 1/2x1/8in",
+        "quantity": 48.0,
+        "unit_price": 846.18,
+        "line_total": 40616.64
+      },
+      {
+        "description": "Tread Rubber Sheet",
+        "quantity": 37.0,
+        "unit_price": 567.66,
+        "line_total": 21003.42
+      },
+      {
+        "description": "Bead Wire Coil 2.5mm",
+        "quantity": 43.0,
+        "unit_price": 144.26,
+        "line_total": 4760.58
+      },
+      {
+        "description": "Tread Rubber Sheet",
+        "quantity": 20.0,
+        "unit_price": 196.78,
+        "line_total": 3935.6
+      },
+      {
+        "description": "Mold Release Agent (SL)",
+        "quantity": 5.0,
+        "unit_price": 498.62,
+        "line_total": 2493.1
+      },
+      {
+        "description": "Bicycle Alloy Rim 26in",
+        "quantity": 36.0,
+        "unit_price": 65.9,
+        "line_total": 2372.4
+      },
+      {
+        "description": "Tyre Sidewall Label Set",
+        "quantity": 5.0,
+        "unit_price": 62.73,
+        "line_total": 1380.06
+      },
+      {
+        "description": "Bioycle Chain 1/2x1/8in",
+        "quantity": 39.0,
+        "unit_price": 413.12,
+        "line_total": 16111.68
+      },
+      {
+        "description": "Mold Release Agent (SL)",
+        "quantity": 60.0,
+        "unit_price": 727.02,
+        "line_total": 43621.2
+      },
+      {
+        "description": "Nylon Cord Fabric Roll",
+        "quantity": 12.0,
+        "unit_price": 62.49,
+        "line_total": 749.88
+      },
+      {
+        "description": "Stee! Radial Tyre 175/65 Rta",
+        "quantity": 34.0,
+        "unit_price": 81.89,
+        "line_total": 2784.26
+      },
+      {
+        "description": "Tyre Sidewall Label Set",
+        "quantity": 43.0,
+        "unit_price": 72.22,
+        "line_total": 938.86
+      },
+      {
+        "description": "Tyre Sidewall Label Set",
+        "quantity": 3.0,
+        "unit_price": 578.6,
+        "line_total": 3472.8
+      },
+      {
+        "description": "Bicycle Alloy Rim 26in",
+        "quantity": 17.0,
+        "unit_price": 352.15,
+        "line_total": 5986.55
+      },
+      {
+        "description": "Vuleanizing Solution (1L)",
+        "quantity": 58.0,
+        "unit_price": 490.68,
+        "line_total": 28459.44
+      },
+      {
+        "description": "Bicycle Spoke Set (36pc)",
+        "quantity": 39.0,
+        "unit_price": 511.42,
+        "line_total": 19945.38
+      },
+      {
+        "description": "Bicycle Alloy Rim 26in",
+        "quantity": 4.0,
+        "unit_price": 83.46,
+        "line_total": 3421.86
+      },
+      {
+        "description": "Tyre Valve Stem (pack of 50)",
+        "quantity": 44.0,
+        "unit_price": 502.37,
+        "line_total": 22104.28
+      },
+      {
+        "description": "Bicycle Brake Pad Set",
+        "quantity": 35.0,
+        "unit_price": 279.17,
+        "line_total": 9770.95
+      }
+    ],
+    "subtotal": 458591.0,
+    "tax_amount": 82546.38,
+    "total_amount": 541137.38
+  },
+  "confidence": {
+    "source_confidence": 0.75,
+    "completeness": 1.0,
+    "arithmetic_consistent": true,
+    "overall_confidence": 0.888,
+    "needs_review": false,
+    "review_reasons": []
+  },
+  "token_usage": {
+    "input_tokens": 1449,
+    "output_tokens": 1105,
+    "total_tokens": 2554,
+    "input_token_details": {
+      "audio": 0,
+      "cache_read": 0
+    },
+    "output_token_details": {
+      "audio": 0,
+      "reasoning": 0
+    }
+  },
+  "raw_text_excerpt": "Shree Balaji Rubber Industries INVOICE Invoice No: IN-2026-1008 Date: 2026-09-18 Bill To: MBCIE Tyre & Cycle Plant | Description | Qty Unit Price | Amount Mold Release Agent (SL) 10 Rs.367.27 Rs.3,672.70 \" Steel Racial Tyre 175/65 Ria 19 Rs.401.29 Rs.7,624.51 | Curing Press Gasket Kit | 57 Rs.785.93 Rs.44,798.01 Tyre Sidewall Label Set 30 Rs.689.70 Rs.20,691.00 Carbon Black Filler (bag) \u201c| 56 | s.474.52 | Rs.26,573.12 | Tyre Repair Patch Kit 4 As \"Rs.559.54 Rs.2,797.70 | Tyre Valve Stem (pack of"
+}

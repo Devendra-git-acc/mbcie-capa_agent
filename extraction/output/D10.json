@@ -1,0 +1,61 @@
+{
+  "doc_id": "D10",
+  "format": "digital",
+  "files": [
+    "D10.pdf"
+  ],
+  "extraction_failed": false,
+  "extracted": {
+    "doc_type": "invoice",
+    "doc_number": null,
+    "doc_date": "2026-01-19",
+    "vendor_name": "Continental Traders Pvt Ltd",
+    "buyer_name": "MBCIE Procurement Dept.",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Carbon Black Filler (bag)",
+        "quantity": 27.0,
+        "unit_price": 124.28,
+        "line_total": 3355.56
+      },
+      {
+        "description": "Mold Release Agent (5L)",
+        "quantity": 43.0,
+        "unit_price": 265.5,
+        "line_total": 11416.5
+      },
+      {
+        "description": "Tread Rubber Sheet",
+        "quantity": 22.0,
+        "unit_price": 790.73,
+        "line_total": 17396.06
+      }
+    ],
+    "subtotal": 32168.12,
+    "tax_amount": 5790.26,
+    "total_amount": 37958.38
+  },
+  "confidence": {
+    "source_confidence": 0.98,
+    "completeness": 0.857,
+    "arithmetic_consistent": true,
+    "overall_confidence": 0.941,
+    "needs_review": false,
+    "review_reasons": []
+  },
+  "token_usage": {
+    "input_tokens": 718,
+    "output_tokens": 157,
+    "total_tokens": 875,
+    "input_token_details": {
+      "audio": 0,
+      "cache_read": 0
+    },
+    "output_token_details": {
+      "audio": 0,
+      "reasoning": 0
+    }
+  },
+  "raw_text_excerpt": "Continental Traders Pvt Ltd\nINVOICE\nDate: 2026-01-19\nBill To: MBCIE Procurement Dept.\nDescription\nQty\nUnit Price\nAmount\nCarbon Black Filler (bag)\n27\nRs.124.28\nRs.3,355.56\nMold Release Agent (5L)\n43\nRs.265.50\nRs.11,416.50\nTread Rubber Sheet\n22\nRs.790.73\nRs.17,396.06\nSubtotal: Rs.32,168.12\nTax: Rs.5,790.26\nTotal: Rs.37,958.38\n"
+}

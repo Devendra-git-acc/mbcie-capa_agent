@@ -1,131 +1,153 @@
-# Scaling architecture: orchestrator + parallel specialists
+# Scaling architecture: one agent, many tools, routed selection
 
-Not implemented -- this is the design discussion for "what would we build
-if there were dozens of data sources instead of 3, and millions of rows
-instead of hundreds" (see git history / conversation for the reasoning).
-Kept here as forward-looking architecture notes, same purpose as
-`data-research-notes.md`, and as the answer to the README's "what I'd do
-differently at scale" question.
+Not implemented -- design discussion for "what would we build if there
+were dozens of data sources instead of 3, and too many tools for one
+model call to pick between reliably." Kept here as forward-looking
+architecture notes, same purpose as `data-research-notes.md`, and as the
+answer to the README's "what I'd do differently at scale" question.
 
-## Current architecture (what's actually built and running)
+**Correction from the first version of this file:** the earlier diagram
+labeled every domain a "Specialist," which reads as "one agent per
+domain." That's wrong, and worth being precise about, because it changes
+the whole answer to "how many agents do we need":
 
-One agent, one message thread, tool calls made one at a time, each
-waiting for the last to finish before deciding the next:
+- **Agent** = something that makes its own LLM call(s) to reason across
+  multiple steps before it has an answer.
+- **Tool** = a plain function. No LLM inside it. Runs, returns data, done.
+
+For our actual domains -- downtime, shifts, complaints -- there is
+nothing to reason about *inside* any one of them. "Look up shift records
+for this machine and window" is one query. That's a **tool**, not an
+agent. The entire design below has exactly **one agent** in it. Everything
+else is a tool the one agent calls.
+
+## Legend used in the diagrams below
+
+| Shape/color | Meaning |
+|---|---|
+| 🟦 Blue rounded box | **Agent** -- makes LLM calls, does reasoning |
+| ⬜ Plain box | **Tool** -- deterministic function, no LLM |
+| 🟨 Dashed box | **Agent-as-tool** -- rare; a tool that happens to run its own small agent loop internally, but looks like an ordinary tool to whatever calls it |
+
+## The actual question: what happens when tool count grows?
+
+This is the real problem your question is pointing at, and it's worth
+being concrete about *why* it happens, not just that it happens: every
+tool's name, description, and parameter schema gets stuffed into the
+model's context on every single call, whether that tool is relevant to
+the current complaint or not. At 6 tools (what we have today) that's
+cheap and the model rarely confuses them. At 50 tools, two things get
+worse at once -- more tokens spent describing tools nobody's going to
+call, and a harder multiple-choice problem where similar-sounding tools
+increasingly get confused for each other or missed entirely. This is a
+documented, measurable degradation, not a vague worry.
 
 ```mermaid
 flowchart TD
-    A[Complaint] --> B[decode_batch_code]
-    B --> C[query_downtime]
-    C --> D[query_shifts]
-    D --> E[query_complaints<br/>same week, cross-machine]
-    E --> F[query_complaints_by_machine<br/>full history]
-    F --> G[Agent proposes conclusion]
-    G --> H{"_verify_material_citation<br/>(only checks Material)"}
-    H -->|invalid| I[Correction message] --> G
-    H -->|valid or non-Material| J[Return conclusion + evidence chain]
+    subgraph A["Without routing -- gets worse as tool count grows"]
+        direction TB
+        A1[Complaint] --> A2["Investigator Agent 🟦<br/>ALL 50 tool schemas loaded<br/>into context, every call"]
+        A2 --> A3["Pick from 50 similar options<br/>-- accuracy drops as this grows"]
+    end
 ```
-
-Two real limits this hits, even at our current tiny scale:
-- **C -> D -> E -> F are serial even though none of them depend on each
-  other's results.** Downtime doesn't need to know what shifts found.
-  That's wasted wall-clock time today, not just a someday problem.
-- **H is bespoke to Material.** Adding a 6th, 7th, 8th root-cause category
-  means writing a new Python verifier function for each one, by hand,
-  forever -- this is the "rules don't scale" problem.
-
-## Proposed architecture: orchestrator dispatching to parallel specialists
 
 ```mermaid
 flowchart TD
-    A[Complaint arrives] --> B["Orchestrator: decode batch code,<br/>route to relevant domains"]
-
-    B -->|relevant| S1[Downtime Specialist]
-    B -->|relevant| S2[Shift Specialist]
-    B -->|relevant| S3[Complaint Specialist]
-    B -->|relevant| S4[Recurrence Specialist]
-    B -.->|not relevant this time| SN["... any other domain<br/>(supplier QA, sensor logs, etc.)"]
-
-    S1 --> R1["finding: {domain, summary,<br/>supporting_record_ids, confidence}"]
-    S2 --> R2["finding: {domain, summary,<br/>supporting_record_ids, confidence}"]
-    S3 --> R3["finding: {domain, summary,<br/>supporting_record_ids, confidence}"]
-    S4 --> R4["finding: {domain, summary,<br/>supporting_record_ids, confidence}"]
-
-    R1 --> SYN[Synthesis: Orchestrator reads<br/>all findings together]
-    R2 --> SYN
-    R3 --> SYN
-    R4 --> SYN
-
-    SYN --> P[Orchestrator proposes conclusion,<br/>cites specific record IDs]
-    P --> V{"Generic Verifier:<br/>do the cited IDs appear in ANY<br/>specialist's supporting_record_ids<br/>for that category?"}
-    V -->|valid| OUT[Return conclusion + evidence chain]
-    V -->|invalid, retries left| COR[Correction message:<br/>cite IDs the specialists actually returned] --> P
-    V -->|invalid, retries exhausted| FAIL[Flag: verification_failed]
-
-    style S1 fill:#e8f4ff,stroke:#4a90d9
-    style S2 fill:#e8f4ff,stroke:#4a90d9
-    style S3 fill:#e8f4ff,stroke:#4a90d9
-    style S4 fill:#e8f4ff,stroke:#4a90d9
-    style SN fill:#f0f0f0,stroke:#999,stroke-dasharray: 5 5
+    subgraph B["With routing -- stays constant regardless of tool count"]
+        direction TB
+        B1[Complaint] --> B2["Investigator Agent 🟦<br/>searches a SHORT catalog first<br/>(name + one-line description each)"]
+        B2 --> B3["Only the 2-5 matched tools'<br/>FULL schemas get loaded"]
+        B3 --> B4["Picks from a small, relevant set<br/>-- same difficulty as today, always"]
+    end
 ```
 
-The four specialist boxes (S1-S4) run **at the same time**, not one after
-another -- none of them need each other's results to do their own job.
-`SN` is greyed out to show the routing step's actual point: with dozens of
-domains, most of them are irrelevant to any one complaint, and routing
-decides that up front instead of calling all of them anyway.
+The mechanism in `B2` isn't hypothetical -- it's the same pattern behind
+`ToolSearch` in the environment this very assistant runs in: tools aren't
+all loaded up front, they're found by a lightweight search over short
+descriptions, and only the matched one's full definition becomes
+callable. Same idea, applied to `query_downtime`-style tools instead of
+assistant tools.
 
-## Why the structured finding contract is the actual fix, not the parallelism
+## Full picture: one agent, a tool catalog, routed selection, parallel calls
 
-The parallelism is a nice speed win. The thing that actually solves "we
-have to hand-write a new rule every time we add a category" is that every
-specialist returns the **same shape** of answer:
+```mermaid
+flowchart TD
+    CAT["Tool catalog (metadata only, cheap to keep in full):<br/>downtime, shifts, complaints, complaints_by_machine,<br/>... every other domain, name + one-line description each"]
 
-```json
-{
-  "domain": "downtime",
-  "summary": "Calibration fix D0131 post-dates the batch by ~1 week",
-  "supporting_record_ids": ["D0131"],
-  "confidence": 0.9
-}
+    A[Complaint arrives] --> ORCH["Investigator Agent 🟦<br/>(the ONLY agent in this design)"]
+    ORCH -->|1. search catalog for relevant domains| CAT
+    CAT -->|2. returns: downtime, shifts, complaints| ORCH
+
+    ORCH -->|3. now bind ONLY these tools, call in parallel| T1["query_downtime ⬜"]
+    ORCH --> T2["query_shifts ⬜"]
+    ORCH --> T3["query_complaints ⬜"]
+    ORCH -.->|not selected, never loaded this turn| TN["supplier_qa_lookup, sensor_telemetry,<br/>... every other tool that exists<br/>but wasn't relevant here ⬜"]
+
+    T1 --> RES["Results returned to the SAME agent<br/>(not separate agents -- one thread,<br/>one context, one reasoning step)"]
+    T2 --> RES
+    T3 --> RES
+
+    RES --> HARD{"Is this ONE domain genuinely complex?<br/>e.g. cross-reference 3 supplier DBs<br/>+ synthesize a risk score"}
+    HARD -->|no, most domains| RES2[Plain tool result, done]
+    HARD -->|yes, rare| AGT["supplier_risk_check 🟨<br/>(agent-as-tool: runs its OWN small<br/>LLM loop internally, but returns<br/>one clean result like any other tool)"]
+    AGT --> RES2
+
+    RES2 --> CONC[Investigator Agent 🟦 proposes conclusion,<br/>cites specific record IDs]
+    CONC --> VER{"Generic verifier: do cited IDs<br/>match what a tool actually returned<br/>for the claimed category?"}
+    VER -->|valid| OUT[Return conclusion + evidence chain]
+    VER -->|invalid, retries left| COR[Correction message] --> CONC
+    VER -->|retries exhausted| FAIL[Flag: verification_failed]
+
+    style ORCH fill:#cfe8ff,stroke:#2a6fb0,stroke-width:2px
+    style CONC fill:#cfe8ff,stroke:#2a6fb0,stroke-width:2px
+    style AGT fill:#fff3c4,stroke:#c9a227,stroke-dasharray: 4 3
+    style TN fill:#f0f0f0,stroke:#999,stroke-dasharray: 5 5
 ```
 
-Today, `_verify_material_citation` has to *parse* the model's citation out
-of free-text prose (`root_cause_hypothesis`), which is why it's bespoke to
-one category's specific wording patterns. If every specialist hands back
-`supporting_record_ids` in a fixed field instead of buried in prose, the
-verifier becomes ONE generic function for every category, present and
-future:
+Reading this straight: there is **one** blue box (the Investigator Agent)
+appearing twice in the flow -- once to decide what to look up, once to
+conclude from what came back. It never stops being the same agent, the
+same conversation thread. The catalog search, the tool calls, and the
+verifier are all plain code and data, not additional agents. The one
+dashed yellow box (`supplier_risk_check`) is the *only* place a second
+LLM might ever get invoked, and only for a domain complex enough to
+justify it -- from the orchestrating agent's point of view, it's
+indistinguishable from any other tool: it sends inputs, gets a result
+back.
 
-```
-is_valid = any(
-    cited_id in finding["supporting_record_ids"]
-    for finding in specialist_findings
-    if finding["domain"] matches the claimed category
-)
-```
+## Which agent uses which tool, mapped onto what actually exists today
 
-Add a 6th category -> add one specialist that returns the same shape.
-The verifier doesn't change. That's the actual answer to "what happens
-when categories increase" -- not smarter prompting, and not a bigger
-self-critique loop, but a fixed contract that every new piece plugs into
-the same way.
-
-## Serial vs. parallel, concretely
-
-| | Serial (current) | Orchestrator + parallel specialists |
+| Component | Type | Who owns it |
 |---|---|---|
-| Wall-clock time | Sum of every tool call | ~Max of the slowest specialist |
-| Cost | One long growing thread | More total calls, but each is small |
-| Adding a domain | Edit the system prompt's step list | Add one specialist, same contract |
-| Verification | Bespoke function per category | One generic function, reused |
-| Framework | LangGraph, single graph | LangGraph, graph-of-subgraphs (same tool, different shape) |
+| `agent.py`'s Investigator | Agent 🟦 | -- (this is the one agent) |
+| `decode_batch_code` | Tool ⬜ | Called by the Investigator |
+| `query_downtime` | Tool ⬜ | Called by the Investigator |
+| `query_shifts` | Tool ⬜ | Called by the Investigator |
+| `query_complaints` | Tool ⬜ | Called by the Investigator |
+| `query_complaints_by_machine` | Tool ⬜ | Called by the Investigator |
+| `_verify_material_citation` | Plain code, not a tool | Runs automatically after a conclusion, not chosen by the model at all |
+
+At our current scale there's no catalog/routing step because 6 tools
+never needed one -- the Investigator just has all 6 bound directly, which
+is exactly the "small set, no confusion" end state the routing step is
+built to preserve once the tool count grows past what one call can hold
+comfortably.
+
+## Serial vs. parallel, and where routing fits, concretely
+
+| | Today (6 tools) | At scale, no routing | At scale, with routing |
+|---|---|---|---|
+| Tools loaded per call | 6 | 50+ | 2-5 (whatever's relevant) |
+| Tool-pick accuracy | Fine | Degrades | Same as today |
+| Number of agents | 1 | 1 | 1 (+ rare agent-as-tool) |
+| Tool calls | Serial, one at a time | N/A | Parallel where independent |
 
 ## Where this project actually stands
 
-18 complaints, 131 downtime records, 1,260 shifts, 3 data sources, 1
-category-specific verifier. None of the problems this architecture solves
-exist yet at this scale -- building it now would be real added complexity
-for zero benefit today. The one piece worth doing regardless of scale:
-parallelizing the four *existing* tool calls (downtime/shifts/complaints/
-complaints-by-machine), since they already don't depend on each other and
-currently run serially for no reason.
+6 tools, 3 data sources, 1 agent. The catalog/routing step doesn't exist
+because nothing here has hit the point where it's needed yet -- adding it
+today would be solving a problem this project doesn't have. The
+parallel-tool-calls piece is the one part worth doing regardless of
+scale, since `query_downtime`/`query_shifts`/`query_complaints`/
+`query_complaints_by_machine` already don't depend on each other and
+currently run one after another for no reason.

@@ -190,6 +190,58 @@ def test_investigate_gives_up_after_max_verification_retries():
           f"flags material_verification_failed instead of looping forever")
 
 
+def test_investigate_accepts_an_adhoc_complaint_not_in_the_dataset():
+    """investigate() must also accept a fresh complaint dict -- not just a
+    known complaint_id -- for the "type your own complaint" path (the demo
+    console, and main.py's POST /investigate). No complaint_id given, so
+    one should be generated."""
+    clean = _submit_conclusion_message("call_1", "Equipment", "Calibration drift per D0131.")
+    fake_final_state = {"messages": [SystemMessage(content="sys"), HumanMessage(content="investigate"), clean],
+                         "steps": 2}
+    adhoc = {"batch_code": "M02-2026W13", "defect_description": "Blistering on inner shoulder."}
+
+    with patch.object(agent.graph, "invoke", return_value=fake_final_state):
+        result = agent.investigate(adhoc)
+
+    assert result["complaint_id"].startswith("ADHOC-")
+    assert result["complaint"]["batch_code"] == "M02-2026W13"
+    assert result["conclusion"]["root_cause_category"] == "Equipment"
+    print("investigate(): accepts an ad-hoc complaint dict not present in complaints.json, "
+          f"generating {result['complaint_id']!r} since none was supplied")
+
+
+def test_investigate_preserves_a_caller_supplied_adhoc_complaint_id():
+    clean = _submit_conclusion_message("call_1", "Equipment", "Calibration drift per D0131.")
+    fake_final_state = {"messages": [SystemMessage(content="sys"), HumanMessage(content="investigate"), clean],
+                         "steps": 2}
+    adhoc = {"complaint_id": "WALKIN-001", "batch_code": "M02-2026W13", "defect_description": "Blistering."}
+
+    with patch.object(agent.graph, "invoke", return_value=fake_final_state):
+        result = agent.investigate(adhoc)
+
+    assert result["complaint_id"] == "WALKIN-001"
+    print("investigate(): a caller-supplied complaint_id on an ad-hoc complaint is kept as-is, not overwritten")
+
+
+def test_investigate_rejects_adhoc_complaint_missing_required_fields():
+    try:
+        agent.investigate({"defect_description": "no batch code given"})
+        assert False, "should have raised ValueError"
+    except ValueError as e:
+        assert "batch_code" in str(e)
+    print("investigate(): an ad-hoc complaint missing batch_code is rejected before touching the graph")
+
+
+def test_investigate_rejects_adhoc_complaint_with_unparseable_batch_code():
+    try:
+        agent.investigate({"batch_code": "not-a-real-code", "defect_description": "x"})
+        assert False, "should have raised ValueError"
+    except ValueError as e:
+        assert "batch_code" in str(e).lower()
+    print("investigate(): an ad-hoc complaint with a malformed batch_code is rejected with a clear reason, "
+          "instead of failing deep inside a tool call")
+
+
 def test_confidence_score_clean_equipment_run_scores_perfectly():
     conclusion = {"root_cause_category": "Equipment", "root_cause_hypothesis": "Explained by D0131."}
     scoring = agent._confidence_score(conclusion, material_verification_failed=False, retries_used=0)
@@ -280,6 +332,10 @@ if __name__ == "__main__":
     test_verify_material_citation_rejects_no_cited_ids()
     test_investigate_retries_on_invalid_material_citation_then_accepts_correction()
     test_investigate_gives_up_after_max_verification_retries()
+    test_investigate_accepts_an_adhoc_complaint_not_in_the_dataset()
+    test_investigate_preserves_a_caller_supplied_adhoc_complaint_id()
+    test_investigate_rejects_adhoc_complaint_missing_required_fields()
+    test_investigate_rejects_adhoc_complaint_with_unparseable_batch_code()
     test_confidence_score_clean_equipment_run_scores_perfectly()
     test_confidence_score_clean_material_run_still_scores_below_threshold()
     test_confidence_score_penalizes_retries_and_missing_citation()

@@ -22,6 +22,7 @@ from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
 REPO_ROOT = Path(__file__).parent
 
@@ -92,6 +93,25 @@ def _update_rca_review_queue(complaint_id: str, result: dict) -> None:
     RCA_REVIEW_QUEUE_PATH.write_text(json.dumps(queue, indent=2))
 
 
+class AdHocComplaint(BaseModel):
+    """A complaint that doesn't have to already exist in complaints.json --
+    for POST /investigate, distinct from POST /investigate/{complaint_id}
+    which only accepts a known fixture ID. batch_code must still decode to
+    a real machine/week (see tools.py's BATCH_RE, format 'M02-2026W13') for
+    the investigation to find anything -- an unrecognized machine or week
+    isn't an error, it just means query_downtime/query_shifts legitimately
+    return nothing and the agent should honestly conclude "Insufficient
+    evidence", the same as it would for a real complaint about an
+    untracked machine."""
+    batch_code: str = Field(..., description="e.g. 'M02-2026W13' -- must match ^M\\d{2}-\\d{4}W\\d{2}$")
+    defect_description: str = Field(..., min_length=1)
+    complaint_id: str | None = Field(None, description="Optional -- auto-generated (ADHOC-xxxxxxxx) if omitted")
+    date_reported: str | None = None
+    product_line: str | None = None
+    customer_or_dealer: str | None = None
+    severity: str | None = None
+
+
 app = FastAPI(title="MBCIE CAPA RCA Agent", version="0.1.0")
 _security = HTTPBasic()
 
@@ -114,6 +134,27 @@ def health():
 @app.get("/complaints", dependencies=[Depends(require_auth)])
 def list_complaints():
     return {"complaint_ids": _complaint_ids}
+
+
+@app.post("/investigate", dependencies=[Depends(require_auth)])
+def run_adhoc_investigation(payload: AdHocComplaint):
+    """Investigate a complaint typed in directly, instead of picking one of
+    the 36 fixture complaints from GET /complaints -- same agent, same
+    verification, same confidence scoring, no restriction to what's
+    already in complaints.json."""
+    complaint = {k: v for k, v in payload.model_dump().items() if v is not None}
+    try:
+        result = investigate(complaint)
+    except ValueError as e:
+        # Bad input (missing/unparseable batch_code) -- caught before the
+        # graph ever runs, so this is a 400, not a 502.
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=502,
+                             detail=f"Investigation failed -- upstream LLM provider error: "
+                                    f"{type(e).__name__}: {e}")
+    _update_rca_review_queue(result["complaint_id"], result)
+    return result
 
 
 @app.post("/investigate/{complaint_id}", dependencies=[Depends(require_auth)])

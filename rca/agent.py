@@ -14,6 +14,7 @@ reads that list straight out. That's what run_single.py serializes.
 import json
 import os
 import re
+import uuid
 from pathlib import Path
 from typing import Literal
 
@@ -385,10 +386,43 @@ def _human_review_reasons(conclusion: dict, conclusion_failed: bool, material_ve
     return reasons, scoring
 
 
-def investigate(complaint_id: str) -> dict:
-    complaint = _complaints_by_id.get(complaint_id)
-    if complaint is None:
-        raise ValueError(f"Unknown complaint_id: {complaint_id}")
+REQUIRED_ADHOC_FIELDS = {"batch_code", "defect_description"}
+
+
+def investigate(complaint_or_id: str | dict) -> dict:
+    """Accepts either a known complaint_id (str, looked up in the fixture
+    dataset -- what eval.py/run_single.py always pass) or a fresh, ad-hoc
+    complaint dict (what the demo console's "type your own" form and
+    main.py's POST /investigate send) so a complaint doesn't have to
+    already exist in complaints.json to be investigated. Same graph, same
+    verification, same confidence scoring either way -- an ad-hoc complaint
+    is only ever the thing *under* investigation, never treated as part of
+    the historical record other complaints get cross-checked against
+    (tools.py's query_complaints_by_machine still only sees the fixture
+    data), which mirrors how this would work in real use: a brand-new
+    complaint investigated against the existing machine/shift history.
+
+    An ad-hoc complaint referencing a batch_code this dataset has no
+    downtime/shift records for is not an error -- the agent will
+    correctly and honestly reach "Insufficient evidence," the same as it
+    would for a real complaint about an untracked machine or week.
+    """
+    if isinstance(complaint_or_id, str):
+        complaint_id = complaint_or_id
+        complaint = _complaints_by_id.get(complaint_id)
+        if complaint is None:
+            raise ValueError(f"Unknown complaint_id: {complaint_id}")
+    else:
+        complaint = dict(complaint_or_id)
+        missing = REQUIRED_ADHOC_FIELDS - complaint.keys()
+        if missing:
+            raise ValueError(f"Ad-hoc complaint missing required field(s): {sorted(missing)}")
+        try:
+            _decode_batch_code(complaint["batch_code"])
+        except ValueError as e:
+            raise ValueError(f"Ad-hoc complaint has an unrecognized batch_code: {e}")
+        complaint_id = complaint.get("complaint_id") or f"ADHOC-{uuid.uuid4().hex[:8]}"
+        complaint["complaint_id"] = complaint_id
 
     messages = [
         SystemMessage(content=SYSTEM_PROMPT),

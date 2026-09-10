@@ -87,6 +87,7 @@ def evaluate_complaint(complaint_id: str, truth: dict, n_runs: int) -> list[dict
             "predicted_category": category,
             "category_match": match,
             "evidence_surfaced": evidence_was_surfaced(result["evidence_chain"], truth),
+            "needs_human_review": result.get("needs_human_review", False),
             "steps_used": result.get("steps_used"),
         })
     return runs
@@ -104,6 +105,7 @@ def main():
     total_failed = 0
     total_verification_failed = 0
     total_verification_retries = 0
+    total_needs_review = 0
     evidence_checks = []
 
     for cid, truth in answer_key.items():
@@ -125,6 +127,7 @@ def main():
         total_failed += failed
         total_verification_failed += sum(1 for r in runs if r["material_verification_failed"])
         total_verification_retries += sum(r["verification_retries_used"] for r in runs)
+        total_needs_review += sum(1 for r in runs if r["needs_human_review"])
         evidence_checks += [r["evidence_surfaced"] for r in runs if r["evidence_surfaced"] is not None]
         vf = sum(1 for r in runs if r["material_verification_failed"])
         vr = sum(r["verification_retries_used"] for r in runs)
@@ -140,6 +143,7 @@ def main():
         "conclusion_failed_rate": round(total_failed / total_runs, 3),
         "material_verification_failed_rate": round(total_verification_failed / total_runs, 3),
         "total_verification_retries_used": total_verification_retries,
+        "human_review_rate": round(total_needs_review / total_runs, 3),
         "evidence_surfaced_rate": round(sum(evidence_checks) / len(evidence_checks), 3) if evidence_checks else None,
         "per_category_hit_rate": {cat: round(per_category_matches[cat] / per_category_totals[cat], 3)
                                    for cat in per_category_totals},
@@ -163,6 +167,9 @@ def main():
     if summary["evidence_surfaced_rate"] is not None:
         print(f"Evidence surfaced rate (storylines with concrete record IDs): "
               f"{summary['evidence_surfaced_rate']:.1%}")
+    print(f"Human review rate: {summary['human_review_rate']:.1%}  "
+          f"(flagged by the deterministic review gate -- conclusion_failed, verification failed, "
+          f"Material category, or genuine Insufficient evidence)")
     print("Per-category hit rate:")
     for cat, rate in summary["per_category_hit_rate"].items():
         print(f"  {cat}: {rate:.1%}")

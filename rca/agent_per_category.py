@@ -332,6 +332,35 @@ def _verify_equipment_finding(finding: dict, complaint: dict) -> bool:
 _VERIFIERS = {"Human": _verify_human_finding, "Equipment": _verify_equipment_finding,
               "Material": _verify_material_finding}
 
+# Same review-gate logic as agent.py's _human_review_reasons, duplicated
+# rather than imported -- this module is a self-contained experiment being
+# A/B tested against agent.py, not a shared dependency of it (see the
+# module docstring's provider-toggle comment for the same rationale).
+# Material stays the lower-trust category by default: round 3's held-out
+# eval (notes/per-category-experiment-results.md) measured 50% here vs.
+# 100% for Human/Equipment/Insufficient evidence on unseen complaints,
+# specifically for THIS module.
+_LOWER_TRUST_CATEGORIES = {"material"}
+
+
+def _human_review_reasons(conclusion: dict, conclusion_failed: bool, material_verification_failed: bool) -> list[str]:
+    reasons = []
+    if conclusion_failed:
+        reasons.append("no investigator produced a real structured finding (conclusion_failed) -- "
+                        "whatever category is shown is a fallback, not a genuine answer")
+    if material_verification_failed:
+        reasons.append("Material finding never passed the mechanical citation check, even after "
+                        "the bounded retry -- the cited evidence does not actually hold up")
+    category = (conclusion.get("root_cause_category") or "").strip().lower()
+    if not conclusion_failed and category in _LOWER_TRUST_CATEGORIES:
+        reasons.append(f"category '{conclusion.get('root_cause_category')}' has measured lower reliability "
+                        f"on unseen complaints (50% in held-out testing, vs. 100% for other categories) -- "
+                        f"review recommended even though this run otherwise looks clean")
+    if not conclusion_failed and category == "insufficient evidence":
+        reasons.append("no specialist investigator found verified supporting evidence -- recommend "
+                        "manual investigation rather than accepting this as final")
+    return reasons
+
 
 def investigate(complaint_id: str) -> dict:
     complaint = _complaints_by_id.get(complaint_id)
@@ -442,16 +471,21 @@ def investigate(complaint_id: str) -> dict:
                                               "escalate for manual review.",
         }
 
+    material_verification_failed = bool(findings.get("Material") and findings["Material"].get("supports_category")
+                                         and not findings["Material"].get("_verified"))
+    review_reasons = _human_review_reasons(conclusion, conclusion_failed, material_verification_failed)
+
     return {
         "complaint_id": complaint_id,
         "complaint": complaint,
         "evidence_chain": all_evidence_chain,
         "conclusion": conclusion,
         "conclusion_failed": conclusion_failed,
-        "material_verification_failed": bool(findings.get("Material") and findings["Material"].get("supports_category")
-                                              and not findings["Material"].get("_verified")),
+        "material_verification_failed": material_verification_failed,
         "verification_log": combined_verification_log,
         "sub_agent_failed": sub_agent_failed,
         "findings_by_category": findings,
+        "needs_human_review": bool(review_reasons),
+        "review_reasons": review_reasons,
         "steps_used": total_steps_used,
     }

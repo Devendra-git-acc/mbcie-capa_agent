@@ -293,6 +293,41 @@ def _verify_material_citation(conclusion: dict, investigated_complaint: dict) ->
                     f"combine a different machine_id than {own_machine} with a matching defect_description.")
 
 
+# Categories flagged for human review by default, not because they're wrong,
+# but because real measurement (rca/generate_data_unseen.py's held-out eval,
+# see notes/per-category-experiment-results.md "Round 3") found Material
+# specifically is where this system is least reliable on genuinely unseen
+# complaints (50%, vs. 100% for every other category) -- and unlike the other
+# review reasons below, this one isn't about a run silently going wrong; it's
+# about knowing where the system's own honest track record says to double-check
+# even a run that appears to have gone right.
+_LOWER_TRUST_CATEGORIES = {"material"}
+
+
+def _human_review_reasons(conclusion: dict, conclusion_failed: bool, material_verification_failed: bool) -> list[str]:
+    """Deterministic review gate, same discipline as Task 2's confidence
+    score: never trust the model's own self-reported `confidence` field
+    alone (the same poor-calibration concern documented for Task 2's
+    extraction confidence applies here too) -- gate on checkable facts
+    the rest of this pipeline already produces instead."""
+    reasons = []
+    if conclusion_failed:
+        reasons.append("agent never produced a real structured conclusion (conclusion_failed) -- "
+                        "whatever category is shown is a fallback, not a genuine answer")
+    if material_verification_failed:
+        reasons.append("Material conclusion never passed the mechanical citation check, even after "
+                        "the bounded retry -- the cited evidence does not actually hold up")
+    category = (conclusion.get("root_cause_category") or "").strip().lower()
+    if not conclusion_failed and category in _LOWER_TRUST_CATEGORIES:
+        reasons.append(f"category '{conclusion.get('root_cause_category')}' has measured lower reliability "
+                        f"on unseen complaints (50% in held-out testing, vs. 100% for other categories) -- "
+                        f"review recommended even though this run otherwise looks clean")
+    if not conclusion_failed and category == "insufficient evidence":
+        reasons.append("system could not reach a conclusion from the available records -- recommend "
+                        "manual investigation rather than accepting this as final")
+    return reasons
+
+
 def investigate(complaint_id: str) -> dict:
     complaint = _complaints_by_id.get(complaint_id)
     if complaint is None:
@@ -362,6 +397,8 @@ def investigate(complaint_id: str) -> dict:
                       "recommended_corrective_action": "Re-run or investigate manually.",
                       "raw_final_message": getattr(messages[-1], "content", None)}
 
+    review_reasons = _human_review_reasons(conclusion, conclusion_failed, material_verification_failed)
+
     return {
         "complaint_id": complaint_id,
         "complaint": complaint,
@@ -371,4 +408,6 @@ def investigate(complaint_id: str) -> dict:
         "material_verification_failed": material_verification_failed,
         "verification_log": verification_log,
         "steps_used": steps_used,
+        "needs_human_review": bool(review_reasons),
+        "review_reasons": review_reasons,
     }

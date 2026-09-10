@@ -190,6 +190,45 @@ def test_investigate_gives_up_after_max_verification_retries():
           f"flags material_verification_failed instead of looping forever")
 
 
+def test_human_review_reasons_clean_equipment_run_needs_no_review():
+    conclusion = {"root_cause_category": "Equipment", "root_cause_hypothesis": "x"}
+    reasons = agent._human_review_reasons(conclusion, conclusion_failed=False, material_verification_failed=False)
+    assert reasons == []
+    print("_human_review_reasons: a clean Equipment conclusion needs no review")
+
+
+def test_human_review_reasons_flags_conclusion_failed():
+    conclusion = {"root_cause_category": "Insufficient evidence", "root_cause_hypothesis": "fallback"}
+    reasons = agent._human_review_reasons(conclusion, conclusion_failed=True, material_verification_failed=False)
+    assert len(reasons) == 1 and "conclusion_failed" in reasons[0]
+    print("_human_review_reasons: conclusion_failed always flags for review, regardless of category")
+
+
+def test_human_review_reasons_flags_material_verification_failed():
+    conclusion = {"root_cause_category": "Material", "root_cause_hypothesis": "x"}
+    reasons = agent._human_review_reasons(conclusion, conclusion_failed=False, material_verification_failed=True)
+    assert any("mechanical citation check" in r for r in reasons)
+    print("_human_review_reasons: material_verification_failed is flagged")
+
+
+def test_human_review_reasons_flags_material_category_by_default():
+    """The round-3 finding: Material measured 50% on unseen data vs 100%
+    elsewhere -- a clean-looking Material run still gets flagged, unlike
+    every other category, because the system's own track record says to
+    double-check it regardless of whether anything else looks wrong."""
+    conclusion = {"root_cause_category": "Material", "root_cause_hypothesis": "x"}
+    reasons = agent._human_review_reasons(conclusion, conclusion_failed=False, material_verification_failed=False)
+    assert any("measured lower reliability" in r for r in reasons)
+    print("_human_review_reasons: a CLEAN Material conclusion is still flagged by default (round-3 evidence)")
+
+
+def test_human_review_reasons_flags_insufficient_evidence():
+    conclusion = {"root_cause_category": "Insufficient evidence", "root_cause_hypothesis": "genuine, not a fallback"}
+    reasons = agent._human_review_reasons(conclusion, conclusion_failed=False, material_verification_failed=False)
+    assert any("could not reach a conclusion" in r for r in reasons)
+    print("_human_review_reasons: a genuine (non-fallback) Insufficient evidence conclusion is flagged too")
+
+
 if __name__ == "__main__":
     test_invoke_forced_conclusion_retries_once_on_empty_response()
     test_invoke_forced_conclusion_does_not_retry_twice()
@@ -202,4 +241,9 @@ if __name__ == "__main__":
     test_verify_material_citation_rejects_no_cited_ids()
     test_investigate_retries_on_invalid_material_citation_then_accepts_correction()
     test_investigate_gives_up_after_max_verification_retries()
+    test_human_review_reasons_clean_equipment_run_needs_no_review()
+    test_human_review_reasons_flags_conclusion_failed()
+    test_human_review_reasons_flags_material_verification_failed()
+    test_human_review_reasons_flags_material_category_by_default()
+    test_human_review_reasons_flags_insufficient_evidence()
     print("\nAll agent self-tests passed (no LLM/API calls made).")

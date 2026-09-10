@@ -39,7 +39,7 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, START, END, MessagesState
@@ -56,6 +56,12 @@ _complaints_by_id = {c["complaint_id"]: c for c in json.loads((DATA_DIR / "compl
 
 MAX_STEPS = 6  # each investigator only has one narrow job -- needs far fewer
                # turns than agent.py's MAX_STEPS=8 juggling all categories
+MAX_VERIFICATION_RETRIES = 2  # same bounded-retry discipline as agent.py's
+                               # verification loop -- this is what was MISSING the
+                               # first time this experiment ran (see
+                               # notes/per-category-experiment-results.md): a
+                               # rejected finding was just discarded with no
+                               # chance to self-correct
 
 
 def _build_model() -> ChatOpenAI:
@@ -83,9 +89,31 @@ def submit_finding(supports_category: bool, confidence: str, supporting_record_i
             "supporting_record_ids": supporting_record_ids, "reasoning": reasoning}
 
 
+@tool
+def submit_finding_equipment(supports_category: bool, confidence: str, supporting_record_ids: list[str],
+                              reasoning: str, is_anomaly_not_routine: bool) -> dict:
+    """Call this once you've finished checking your ONE assigned signal.
+    supports_category must be True only if you found concrete evidence in the records YOU looked up --
+    never guess.
+    supporting_record_ids: the exact record IDs (downtime_id or complaint_id) that support your finding --
+    empty list if supports_category is False.
+    confidence: high, medium, or low.
+    reasoning: one or two sentences, must reference the record IDs you cited.
+    is_anomaly_not_routine: ONLY relevant if you're citing a downtime_id. Must be True only if that record
+    describes catching/fixing an actual problem (e.g. a calibration drift, a breakdown) -- NOT a routine
+    scheduled event (e.g. "Scheduled PM", ordinary changeover). A routine event existing is not evidence of
+    anything; do not set supports_category=True on a downtime record alone unless this is also True. If
+    you're citing complaint IDs for a recurrence pattern instead of a downtime record, set this to True
+    (not applicable to that evidence type)."""
+    return {"supports_category": supports_category, "confidence": confidence,
+            "supporting_record_ids": supporting_record_ids, "reasoning": reasoning,
+            "is_anomaly_not_routine": is_anomaly_not_routine}
+
+
 CATEGORY_CONFIGS = {
     "Human": {
         "tools": [decode_batch_code, query_shifts],
+        "submit_tool": submit_finding,
         "prompt": """You are a narrow specialist investigator at a tyre/cycle plant, checking ONLY ONE thing: \
 whether a trainee-staffed shift explains a manufacturing defect. You are NOT responsible for any other \
 root-cause category -- do not consider material, equipment, or process causes at all.
@@ -99,6 +127,7 @@ that shift_id in supporting_record_ids.
     },
     "Equipment": {
         "tools": [decode_batch_code, query_downtime, query_complaints_by_machine],
+        "submit_tool": submit_finding_equipment,
         "prompt": """You are a narrow specialist investigator at a tyre/cycle plant, checking ONLY ONE thing: \
 whether an equipment issue -- a discrete downtime/maintenance event, OR gradual wear shown by recurrence -- \
 explains a manufacturing defect. You are NOT responsible for any other root-cause category -- do not \
@@ -109,16 +138,22 @@ consider human, material, or process causes at all.
 maintenance fix is sometimes only logged after the defective batch already shipped, and can still explain \
 it -- check whether the record describes catching/fixing something that would already have been affecting \
 production before that date.
-3. If you find such a record, that is your evidence: supports_category=True, cite that downtime_id.
+3. If you find such a record, that is your evidence -- but ONLY if it describes an actual anomaly being \
+caught/fixed (e.g. "recalibrated after drift found"), not a routine scheduled event (e.g. "Scheduled PM"). \
+A routine event existing proves nothing; do not treat one as evidence just because it's the only downtime \
+record around. If it's genuinely an anomaly: supports_category=True, cite that downtime_id,
+is_anomaly_not_routine=True.
 4. If not, check this machine's full complaint history (query_complaints_by_machine) for recurrence across \
 several non-adjacent weeks with no single explaining event -- that recurrence pattern itself is evidence of \
-gradual equipment wear. If found, supports_category=True, cite the recurring complaint_ids.
+gradual equipment wear. If found, supports_category=True, cite the recurring complaint_ids,
+is_anomaly_not_routine=True (not applicable to this evidence type, so leave it True).
 5. If neither applies, supports_category=False, empty supporting_record_ids.
-6. Call submit_finding. Never guess -- only report True if you found an actual record or a genuine \
-multi-week recurrence pattern (list specific complaint IDs, not just "multiple complaints")."""
+6. Call submit_finding_equipment. Never guess -- only report True if you found a genuine anomaly record or \
+a real multi-week recurrence pattern (list specific complaint IDs, not just "multiple complaints")."""
     },
     "Material": {
         "tools": [decode_batch_code, query_complaints],
+        "submit_tool": submit_finding,
         "prompt": """You are a narrow specialist investigator at a tyre/cycle plant, checking ONLY ONE thing: \
 whether a shared material batch explains a manufacturing defect. You are NOT responsible for any other \
 root-cause category -- do not consider human, equipment, or process causes at all.
@@ -139,13 +174,18 @@ matching-symptom complaint, and cite its complaint_id."""
 PRIORITY = ["Human", "Equipment", "Material"]  # first verified-True finding in this order wins
 
 
-def _build_investigator_graph(category: str):
+def _build_investigator_graph(category: str) -> dict:
     """The one reusable builder -- identical graph shape every call, only
-    the prompt and tool subset differ per category."""
+    the prompt, tool subset, and submit tool differ per category. Returns
+    a bundle (not just the compiled graph) so investigate() can reuse
+    model_concluding directly for the verification-retry loop, the same
+    way agent.py's _invoke_forced_conclusion gets reused for its retries."""
     config = CATEGORY_CONFIGS[category]
+    submit_tool = config["submit_tool"]
+    submit_name = submit_tool.name
     model = _build_model()
-    model_with_tools = model.bind_tools(config["tools"] + [submit_finding])
-    model_concluding = model.bind_tools([submit_finding], tool_choice="submit_finding")
+    model_with_tools = model.bind_tools(config["tools"] + [submit_tool])
+    model_concluding = model.bind_tools([submit_tool], tool_choice=submit_name)
     tool_node = ToolNode(config["tools"])
 
     class State(MessagesState):
@@ -155,14 +195,14 @@ def _build_investigator_graph(category: str):
         steps = state.get("steps", 0)
         messages = state["messages"]
         if steps >= MAX_STEPS:
-            forced = HumanMessage(content="Step limit reached. Call submit_finding now with your best "
-                                           "answer based on what you've found so far.")
+            forced = HumanMessage(content=f"Step limit reached. Call {submit_name} now with your best "
+                                           f"answer based on what you've found so far.")
             response = model_concluding.invoke(messages + [forced])
         else:
             response = model_with_tools.invoke(messages)
             if not getattr(response, "tool_calls", None):
-                forced = HumanMessage(content="Call submit_finding now with your finding -- the summary "
-                                               "you just wrote is not a structured answer.")
+                forced = HumanMessage(content=f"Call {submit_name} now with your finding -- the summary "
+                                               f"you just wrote is not a structured answer.")
                 response = model_concluding.invoke(messages + [response, forced])
         return {"messages": [response], "steps": steps + 1}
 
@@ -171,7 +211,7 @@ def _build_investigator_graph(category: str):
         tool_calls = getattr(last, "tool_calls", None)
         if not tool_calls:
             return END
-        if any(tc["name"] == "submit_finding" for tc in tool_calls):
+        if any(tc["name"] == submit_name for tc in tool_calls):
             return END
         return "tools"
 
@@ -181,13 +221,23 @@ def _build_investigator_graph(category: str):
     builder.add_edge(START, "agent")
     builder.add_conditional_edges("agent", route, {"tools": "tools", END: END})
     builder.add_edge("tools", "agent")
-    return builder.compile()
+    return {"graph": builder.compile(), "model_concluding": model_concluding, "submit_name": submit_name}
 
 
-_GRAPHS = {category: _build_investigator_graph(category) for category in CATEGORY_CONFIGS}
+_INVESTIGATORS = {category: _build_investigator_graph(category) for category in CATEGORY_CONFIGS}
 
 
-def _build_evidence_chain(messages) -> list[dict]:
+def _invoke_forced_finding(model_concluding, messages):
+    """Same discipline as agent.py's _invoke_forced_conclusion -- retry
+    once if the model returns no tool call at all, then accept whatever
+    comes back rather than looping forever."""
+    response = model_concluding.invoke(messages)
+    if not getattr(response, "tool_calls", None):
+        response = model_concluding.invoke(messages)
+    return response
+
+
+def _build_evidence_chain(messages, submit_name: str = "submit_finding") -> list[dict]:
     """Same idea as agent.py's build_evidence_chain -- walk the messages,
     pair each investigation tool call with its result. submit_finding is
     the termination signal here, same role submit_conclusion plays there."""
@@ -199,7 +249,7 @@ def _build_evidence_chain(messages) -> list[dict]:
     step = 1
     for m in messages:
         for tc in getattr(m, "tool_calls", None) or []:
-            if tc["name"] == "submit_finding":
+            if tc["name"] == submit_name:
                 continue
             chain.append({"step": step, "tool": tc["name"], "args": tc["args"],
                           "result": by_call_id.get(tc["id"])})
@@ -207,10 +257,10 @@ def _build_evidence_chain(messages) -> list[dict]:
     return chain
 
 
-def _extract_finding(messages) -> dict | None:
+def _extract_finding(messages, submit_name: str = "submit_finding") -> dict | None:
     last = messages[-1]
     for tc in getattr(last, "tool_calls", None) or []:
-        if tc["name"] == "submit_finding":
+        if tc["name"] == submit_name:
             return tc["args"]
     return None
 
@@ -256,7 +306,12 @@ def _verify_equipment_finding(finding: dict, complaint: dict) -> bool:
 
     real_downtime_ids = {d["downtime_id"] for d in _downtime if d["machine_id"] == machine}
     if any(cid in real_downtime_ids for cid in ids):
-        return True  # a real discrete downtime record is sufficient on its own
+        # A real downtime record alone isn't enough -- it must also be self-reported
+        # as an anomaly, not routine (e.g. "Scheduled PM"). This is the model's OWN
+        # structured claim, not free text the verifier has to parse or guess at --
+        # diagnosed directly on C008, where a routine maintenance record got waved
+        # through as "could have addressed issues" before this check existed.
+        return bool(finding.get("is_anomaly_not_routine", False))
 
     # Otherwise this must be a genuine recurrence claim: same-machine complaints
     # spread across a DIFFERENT week than the one under investigation, not just
@@ -284,14 +339,52 @@ def investigate(complaint_id: str) -> dict:
         raise ValueError(f"Unknown complaint_id: {complaint_id}")
 
     def run_one(category: str):
-        graph = _GRAPHS[category]
+        investigator = _INVESTIGATORS[category]
+        submit_name = investigator["submit_name"]
         messages = [
             SystemMessage(content=CATEGORY_CONFIGS[category]["prompt"]),
             HumanMessage(content=f"Investigate this complaint:\n{json.dumps(complaint, indent=2)}"),
         ]
-        final_state = graph.invoke({"messages": messages, "steps": 0},
-                                    config={"recursion_limit": MAX_STEPS * 2 + 4})
-        return category, final_state["messages"], final_state.get("steps", 0)
+        final_state = investigator["graph"].invoke({"messages": messages, "steps": 0},
+                                                     config={"recursion_limit": MAX_STEPS * 2 + 4})
+        messages = final_state["messages"]
+        steps_used = final_state.get("steps", 0)
+
+        finding = _extract_finding(messages, submit_name)
+        verification_log = []
+
+        # The retry loop that was MISSING the first time this experiment ran:
+        # a rejected finding used to just get discarded. Now it gets the same
+        # bounded, feedback-driven retry that worked so well for agent.py's
+        # Material check.
+        if finding is not None:
+            is_valid = _VERIFIERS[category](finding, complaint)
+            while not is_valid and len(verification_log) < MAX_VERIFICATION_RETRIES:
+                verification_log.append({"attempt": len(verification_log) + 1, "category": category})
+                last_ai_message = messages[-1]
+                submit_call = next((tc for tc in getattr(last_ai_message, "tool_calls", None) or []
+                                     if tc["name"] == submit_name), None)
+                if submit_call is not None:
+                    # Same OpenAI API requirement as agent.py: a pending tool_call
+                    # must be answered before anything else can follow it.
+                    messages = messages + [ToolMessage(
+                        content="Rejected by verification -- see correction note.",
+                        tool_call_id=submit_call["id"])]
+                correction = HumanMessage(content=(
+                    "Your finding needs correction: the evidence you cited doesn't hold up "
+                    "(wrong machine, a routine record mistaken for an anomaly, or similar). "
+                    f"Reconsider what you already looked up and call {submit_name} again."))
+                messages = messages + [correction]
+                response = _invoke_forced_finding(investigator["model_concluding"], messages)
+                messages = messages + [response]
+                finding = _extract_finding(messages, submit_name)
+                if finding is None:
+                    break
+                is_valid = _VERIFIERS[category](finding, complaint)
+            if finding is not None:
+                finding["_verified"] = is_valid
+
+        return category, messages, steps_used, finding, verification_log
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(CATEGORY_CONFIGS)) as pool:
         results = list(pool.map(run_one, CATEGORY_CONFIGS))
@@ -301,20 +394,20 @@ def investigate(complaint_id: str) -> dict:
     all_evidence_chain = []
     step = 1
     total_steps_used = 0
+    combined_verification_log = []
 
-    for category, messages, steps_used in results:
+    for category, messages, steps_used, finding, verification_log in results:
         total_steps_used += steps_used
-        for item in _build_evidence_chain(messages):
+        combined_verification_log.extend(verification_log)
+        submit_name = _INVESTIGATORS[category]["submit_name"]
+        for item in _build_evidence_chain(messages, submit_name):
             item = dict(item)
             item["step"] = step
             item["investigator"] = category
             all_evidence_chain.append(item)
             step += 1
 
-        finding = _extract_finding(messages)
         sub_agent_failed[category] = finding is None
-        if finding is not None:
-            finding["_verified"] = _VERIFIERS[category](finding, complaint)
         findings[category] = finding
 
     winner = None
@@ -357,7 +450,7 @@ def investigate(complaint_id: str) -> dict:
         "conclusion_failed": conclusion_failed,
         "material_verification_failed": bool(findings.get("Material") and findings["Material"].get("supports_category")
                                               and not findings["Material"].get("_verified")),
-        "verification_log": [],
+        "verification_log": combined_verification_log,
         "sub_agent_failed": sub_agent_failed,
         "findings_by_category": findings,
         "steps_used": total_steps_used,

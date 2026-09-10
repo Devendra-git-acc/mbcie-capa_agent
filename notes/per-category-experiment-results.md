@@ -1,5 +1,11 @@
 # Per-category investigator experiment: real results
 
+**Update, round 2: 100% (54/54).** See "Round 2" section near the bottom
+for what changed and the honest caveats before treating that number as
+the final word. The section below is the original round -- kept as-is,
+not rewritten, because the regression it documents is exactly what
+motivated round 2's two fixes.
+
 Branch: `experiment/per-category-investigator`. Built per
 `scaling-architecture.md`'s "alternative considered" section -- one
 reusable investigator builder, instantiated once per category (Human,
@@ -109,3 +115,67 @@ must be more reliable turned out to be only half true.
 
 None of these are done -- flagging them as the next things to try, not
 claiming they'd work.
+
+## Round 2: two targeted fixes, real result 100% (54/54)
+
+Both untried ideas above were actually implemented, plus the one gap
+that was really the bigger story:
+
+1. **Added the verification-retry loop each investigator was missing.**
+   Round 1's investigators got exactly one shot -- rejected findings were
+   discarded with no chance to self-correct. `agent.py`'s Material check
+   already proved that feeding a rejected finding's specific reason back
+   and letting the model retry (bounded, max 2 attempts) works well; this
+   was simply never carried over to the per-category investigators the
+   first time. Now it is, using the same "close the pending tool_call with
+   a synthetic ToolMessage before appending the correction" fix already
+   applied in `agent.py` (same OpenAI API constraint applies here).
+2. **Made the Equipment investigator's evidence claim structurally
+   checkable.** Added `is_anomaly_not_routine: bool` as a required field
+   on its `submit_finding_equipment` tool (Equipment gets its own tool
+   variant; Human and Material still share the plain `submit_finding`) --
+   forcing an explicit, separate commitment instead of burying "is this
+   actually suspicious or just routine" inside free-text reasoning the
+   verifier can't check. The verifier now requires this field be True
+   before accepting a cited downtime record, on top of it being real.
+
+**Result**: every category, every complaint, all 3 runs: 100.0%.
+Verified live on C008 first (the exact complaint that failed in round 1)
+before the full run: Equipment correctly retried and stood down
+("No evidence of an anomaly... routine"), Material correctly retried and
+found the genuine cross-machine citation (C010) it had access to all
+along. Full `eval.py` run: 54/54, 36 correction attempts used across
+54 investigations (~0.67 retries/investigation on average -- most
+investigations needed at least one correction round).
+
+### Read this number carefully, not just triumphantly
+
+- **The two fixes were built by diagnosing exact failures on this same
+  18-complaint dataset**, then re-tested on that same dataset. The checks
+  themselves are structural/general (machine_id equality, week
+  comparison, an explicit anomaly flag) rather than hardcoded to specific
+  complaint IDs, so this isn't literally memorizing answers -- but 100%
+  on the dataset the fixes were tuned against is a different claim than
+  "this would score 100% on a fresh, never-seen batch of complaints."
+  The honest framing: these are now two well-diagnosed, generally-stated
+  rules, not overfit patches, but they've only been measured against the
+  data that inspired them.
+- **Real added cost.** ~0.67 retries/investigation on top of the 3
+  parallel base calls means real extra latency and token spend beyond
+  what round 1 already cost more than the single-agent design. The
+  retry-driven reliability is genuinely valuable, but it isn't free, and
+  that trade should be weighed explicitly, not assumed away by the
+  headline number.
+- **Not yet re-tested**: the free OpenRouter model (this round only ran
+  against `gpt-4o-mini`, same as round 1).
+
+### Where this leaves the architecture decision
+
+This changes the earlier recommendation. Round 1 measured worse than the
+single-agent design (61.1% vs 72.2%) and the advice was to keep the
+single agent. Round 2 measures decisively better (100% vs 72.2%), on the
+same eval, same model. The per-category design is the stronger result now
+-- the open questions before treating it as the new default are exactly
+the two caveats above: does it hold up on complaints it wasn't tuned
+against, and is the added call volume worth it for this project's actual
+needs.

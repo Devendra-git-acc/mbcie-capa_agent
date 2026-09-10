@@ -293,39 +293,96 @@ def _verify_material_citation(conclusion: dict, investigated_complaint: dict) ->
                     f"combine a different machine_id than {own_machine} with a matching defect_description.")
 
 
-# Categories flagged for human review by default, not because they're wrong,
-# but because real measurement (rca/generate_data_unseen.py's held-out eval,
-# see notes/per-category-experiment-results.md "Round 3") found Material
-# specifically is where this system is least reliable on genuinely unseen
-# complaints (50%, vs. 100% for every other category) -- and unlike the other
-# review reasons below, this one isn't about a run silently going wrong; it's
-# about knowing where the system's own honest track record says to double-check
-# even a run that appears to have gone right.
-_LOWER_TRUST_CATEGORIES = {"material"}
+# Category reliability priors: NOT a guess -- these are the real measured
+# per-category hit rates from the held-out (never tuned against) evaluation
+# in rca/generate_data_unseen.py (see notes/per-category-experiment-results.md
+# "Round 3"). Equipment/Human/Insufficient evidence all measured 100% on
+# genuinely unseen complaints; Material measured 50%. Process/Scheduling are
+# never actually exercised by any planted storyline in this dataset, so
+# there's no real measurement for them -- default to a conservative 0.7
+# rather than assuming they're as reliable as the categories that were
+# actually tested.
+_CATEGORY_RELIABILITY = {
+    "equipment": 1.0, "human": 1.0, "insufficient evidence": 1.0,
+    "material": 0.5, "process": 0.7, "scheduling": 0.7,
+}
+_RECORD_ID_RE = re.compile(r"\b[DSC]\d{3,4}\b")  # downtime_id / shift_id / complaint_id shapes
+
+CONFIDENCE_THRESHOLD = 0.80
 
 
-def _human_review_reasons(conclusion: dict, conclusion_failed: bool, material_verification_failed: bool) -> list[str]:
-    """Deterministic review gate, same discipline as Task 2's confidence
-    score: never trust the model's own self-reported `confidence` field
-    alone (the same poor-calibration concern documented for Task 2's
-    extraction confidence applies here too) -- gate on checkable facts
-    the rest of this pipeline already produces instead."""
+def _confidence_score(conclusion: dict, material_verification_failed: bool, retries_used: int) -> dict:
+    """Composite score, same principle as Task 2's confidence (weighted,
+    independently-explainable signals -- never the model's own self-reported
+    `confidence` field, which is exactly as poorly calibrated here as it is
+    for extraction). Three signals:
+      - verification: did the conclusion pass its own consistency check
+        cleanly, or did it need correcting (or never pass at all)?
+      - category reliability: this category's REAL measured accuracy on
+        unseen data, not an assumption that every category is equally
+        trustworthy.
+      - citation completeness: does the hypothesis actually name a specific
+        record, or is it unsupported prose?
+    Category gets the heaviest weight on purpose -- it's the one signal
+    backed by an actual held-out measurement, not a heuristic."""
+    if material_verification_failed:
+        verification_signal = 0.0
+    elif retries_used == 0:
+        verification_signal = 1.0
+    elif retries_used == 1:
+        verification_signal = 0.6
+    else:
+        verification_signal = 0.3
+
+    category = (conclusion.get("root_cause_category") or "").strip().lower()
+    category_signal = _CATEGORY_RELIABILITY.get(category, 0.7)
+
+    hypothesis = conclusion.get("root_cause_hypothesis", "") or ""
+    if category == "insufficient evidence":
+        citation_signal = 1.0  # nothing concrete to cite, by design -- not a completeness gap
+    else:
+        citation_signal = 1.0 if _RECORD_ID_RE.search(hypothesis) else 0.0
+
+    score = round(0.30 * verification_signal + 0.50 * category_signal + 0.20 * citation_signal, 3)
+    return {"score": score, "verification_signal": verification_signal,
+            "category_signal": category_signal, "citation_signal": citation_signal}
+
+
+def _human_review_reasons(conclusion: dict, conclusion_failed: bool, material_verification_failed: bool,
+                           retries_used: int) -> tuple[list[str], dict]:
+    """Deterministic review gate. conclusion_failed and a genuine
+    "Insufficient evidence" answer are separate, always-on triggers --
+    those aren't really "how confident are we this answer is right,"
+    they're "does this even look like a real answer" and "the system
+    gave up, a human should look further." Everything else routes
+    through the graded confidence score."""
     reasons = []
+    scoring = {"score": 1.0, "verification_signal": 1.0, "category_signal": 1.0, "citation_signal": 1.0}
+
     if conclusion_failed:
         reasons.append("agent never produced a real structured conclusion (conclusion_failed) -- "
                         "whatever category is shown is a fallback, not a genuine answer")
-    if material_verification_failed:
-        reasons.append("Material conclusion never passed the mechanical citation check, even after "
-                        "the bounded retry -- the cited evidence does not actually hold up")
+        return reasons, {"score": 0.0, "verification_signal": 0.0, "category_signal": 0.0, "citation_signal": 0.0}
+
+    scoring = _confidence_score(conclusion, material_verification_failed, retries_used)
     category = (conclusion.get("root_cause_category") or "").strip().lower()
-    if not conclusion_failed and category in _LOWER_TRUST_CATEGORIES:
-        reasons.append(f"category '{conclusion.get('root_cause_category')}' has measured lower reliability "
-                        f"on unseen complaints (50% in held-out testing, vs. 100% for other categories) -- "
-                        f"review recommended even though this run otherwise looks clean")
-    if not conclusion_failed and category == "insufficient evidence":
+
+    if category == "insufficient evidence":
         reasons.append("system could not reach a conclusion from the available records -- recommend "
                         "manual investigation rather than accepting this as final")
-    return reasons
+    if scoring["score"] < CONFIDENCE_THRESHOLD:
+        weak = []
+        if scoring["verification_signal"] < 1.0:
+            weak.append(f"verification signal {scoring['verification_signal']} (retries used: {retries_used}, "
+                        f"material_verification_failed: {material_verification_failed})")
+        if scoring["category_signal"] < 1.0:
+            weak.append(f"category '{conclusion.get('root_cause_category')}' has a measured reliability prior "
+                        f"of only {scoring['category_signal']} from held-out testing")
+        if scoring["citation_signal"] < 1.0:
+            weak.append("hypothesis does not cite any specific record ID")
+        reasons.append(f"confidence score {scoring['score']} is below the {CONFIDENCE_THRESHOLD} threshold "
+                        f"-- " + "; ".join(weak))
+    return reasons, scoring
 
 
 def investigate(complaint_id: str) -> dict:
@@ -397,7 +454,8 @@ def investigate(complaint_id: str) -> dict:
                       "recommended_corrective_action": "Re-run or investigate manually.",
                       "raw_final_message": getattr(messages[-1], "content", None)}
 
-    review_reasons = _human_review_reasons(conclusion, conclusion_failed, material_verification_failed)
+    review_reasons, confidence_scoring = _human_review_reasons(
+        conclusion, conclusion_failed, material_verification_failed, len(verification_log))
 
     return {
         "complaint_id": complaint_id,
@@ -408,6 +466,7 @@ def investigate(complaint_id: str) -> dict:
         "material_verification_failed": material_verification_failed,
         "verification_log": verification_log,
         "steps_used": steps_used,
+        "confidence_score": confidence_scoring,
         "needs_human_review": bool(review_reasons),
         "review_reasons": review_reasons,
     }

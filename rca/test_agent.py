@@ -190,43 +190,82 @@ def test_investigate_gives_up_after_max_verification_retries():
           f"flags material_verification_failed instead of looping forever")
 
 
+def test_confidence_score_clean_equipment_run_scores_perfectly():
+    conclusion = {"root_cause_category": "Equipment", "root_cause_hypothesis": "Explained by D0131."}
+    scoring = agent._confidence_score(conclusion, material_verification_failed=False, retries_used=0)
+    assert scoring["score"] == 1.0, scoring
+    print(f"_confidence_score: clean Equipment run with a cited ID scores {scoring['score']} (perfect)")
+
+
+def test_confidence_score_clean_material_run_still_scores_below_threshold():
+    """The round-3 finding, now expressed as a score instead of a hardcoded
+    rule: Material measured 50% on unseen data vs 100% elsewhere, so even a
+    PERFECTLY clean Material run (no retries, real citation) still can't
+    clear the threshold, because the category signal alone caps it."""
+    conclusion = {"root_cause_category": "Material", "root_cause_hypothesis": "Cross-machine match: C010."}
+    scoring = agent._confidence_score(conclusion, material_verification_failed=False, retries_used=0)
+    assert scoring["score"] < agent.CONFIDENCE_THRESHOLD, scoring
+    print(f"_confidence_score: a CLEAN Material run still scores {scoring['score']} "
+          f"(below the {agent.CONFIDENCE_THRESHOLD} threshold) -- the category prior caps it")
+
+
+def test_confidence_score_penalizes_retries_and_missing_citation():
+    conclusion_no_cite = {"root_cause_category": "Equipment", "root_cause_hypothesis": "no ID cited here"}
+    scoring = agent._confidence_score(conclusion_no_cite, material_verification_failed=False, retries_used=0)
+    assert scoring["citation_signal"] == 0.0 and scoring["score"] < 1.0
+
+    conclusion_retried = {"root_cause_category": "Equipment", "root_cause_hypothesis": "D0131 explains it."}
+    scoring2 = agent._confidence_score(conclusion_retried, material_verification_failed=False, retries_used=2)
+    assert scoring2["verification_signal"] < 1.0 and scoring2["score"] < 1.0
+    print("_confidence_score: missing citation and extra retries both pull the score down independently")
+
+
 def test_human_review_reasons_clean_equipment_run_needs_no_review():
-    conclusion = {"root_cause_category": "Equipment", "root_cause_hypothesis": "x"}
-    reasons = agent._human_review_reasons(conclusion, conclusion_failed=False, material_verification_failed=False)
-    assert reasons == []
-    print("_human_review_reasons: a clean Equipment conclusion needs no review")
+    conclusion = {"root_cause_category": "Equipment", "root_cause_hypothesis": "Explained by D0131."}
+    reasons, scoring = agent._human_review_reasons(conclusion, conclusion_failed=False,
+                                                     material_verification_failed=False, retries_used=0)
+    assert reasons == [] and scoring["score"] == 1.0
+    print("_human_review_reasons: a clean, cited Equipment conclusion needs no review")
 
 
 def test_human_review_reasons_flags_conclusion_failed():
     conclusion = {"root_cause_category": "Insufficient evidence", "root_cause_hypothesis": "fallback"}
-    reasons = agent._human_review_reasons(conclusion, conclusion_failed=True, material_verification_failed=False)
-    assert len(reasons) == 1 and "conclusion_failed" in reasons[0]
+    reasons, scoring = agent._human_review_reasons(conclusion, conclusion_failed=True,
+                                                     material_verification_failed=False, retries_used=0)
+    assert len(reasons) == 1 and "conclusion_failed" in reasons[0] and scoring["score"] == 0.0
     print("_human_review_reasons: conclusion_failed always flags for review, regardless of category")
 
 
 def test_human_review_reasons_flags_material_verification_failed():
-    conclusion = {"root_cause_category": "Material", "root_cause_hypothesis": "x"}
-    reasons = agent._human_review_reasons(conclusion, conclusion_failed=False, material_verification_failed=True)
-    assert any("mechanical citation check" in r for r in reasons)
-    print("_human_review_reasons: material_verification_failed is flagged")
+    conclusion = {"root_cause_category": "Material", "root_cause_hypothesis": "C010."}
+    reasons, scoring = agent._human_review_reasons(conclusion, conclusion_failed=False,
+                                                     material_verification_failed=True, retries_used=2)
+    assert any("material_verification_failed: True" in r for r in reasons)
+    assert scoring["verification_signal"] == 0.0
+    print(f"_human_review_reasons: material_verification_failed drives the score to {scoring['score']} and is flagged")
 
 
 def test_human_review_reasons_flags_material_category_by_default():
-    """The round-3 finding: Material measured 50% on unseen data vs 100%
-    elsewhere -- a clean-looking Material run still gets flagged, unlike
-    every other category, because the system's own track record says to
-    double-check it regardless of whether anything else looks wrong."""
-    conclusion = {"root_cause_category": "Material", "root_cause_hypothesis": "x"}
-    reasons = agent._human_review_reasons(conclusion, conclusion_failed=False, material_verification_failed=False)
-    assert any("measured lower reliability" in r for r in reasons)
-    print("_human_review_reasons: a CLEAN Material conclusion is still flagged by default (round-3 evidence)")
+    """Same round-3 finding as the confidence_score test above, checked at
+    the review-gate level this time: a clean-looking Material run still
+    gets flagged, unlike every other category, because the system's own
+    measured track record says to double-check it regardless of whether
+    anything else looks wrong."""
+    conclusion = {"root_cause_category": "Material", "root_cause_hypothesis": "Cross-machine match: C010."}
+    reasons, scoring = agent._human_review_reasons(conclusion, conclusion_failed=False,
+                                                     material_verification_failed=False, retries_used=0)
+    assert any("reliability prior" in r for r in reasons)
+    print(f"_human_review_reasons: a CLEAN Material conclusion (score {scoring['score']}) is still flagged")
 
 
 def test_human_review_reasons_flags_insufficient_evidence():
     conclusion = {"root_cause_category": "Insufficient evidence", "root_cause_hypothesis": "genuine, not a fallback"}
-    reasons = agent._human_review_reasons(conclusion, conclusion_failed=False, material_verification_failed=False)
+    reasons, scoring = agent._human_review_reasons(conclusion, conclusion_failed=False,
+                                                     material_verification_failed=False, retries_used=0)
     assert any("could not reach a conclusion" in r for r in reasons)
-    print("_human_review_reasons: a genuine (non-fallback) Insufficient evidence conclusion is flagged too")
+    assert scoring["score"] == 1.0  # the trigger fires regardless of score -- it's not a low-confidence signal
+    print("_human_review_reasons: a genuine (non-fallback) Insufficient evidence conclusion is flagged "
+          f"even though its own score is {scoring['score']} -- this trigger is separate from the score")
 
 
 if __name__ == "__main__":
@@ -241,6 +280,9 @@ if __name__ == "__main__":
     test_verify_material_citation_rejects_no_cited_ids()
     test_investigate_retries_on_invalid_material_citation_then_accepts_correction()
     test_investigate_gives_up_after_max_verification_retries()
+    test_confidence_score_clean_equipment_run_scores_perfectly()
+    test_confidence_score_clean_material_run_still_scores_below_threshold()
+    test_confidence_score_penalizes_retries_and_missing_citation()
     test_human_review_reasons_clean_equipment_run_needs_no_review()
     test_human_review_reasons_flags_conclusion_failed()
     test_human_review_reasons_flags_material_verification_failed()

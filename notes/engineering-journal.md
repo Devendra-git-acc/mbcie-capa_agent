@@ -710,6 +710,321 @@ rather than by assumption.
 
 ---
 
+## Part 8: LangGraph mechanics, in detail
+
+Everything above talks about "the agent" and "the graph" without
+explaining how LangGraph actually implements the loop underneath. Worth
+knowing precisely, since several of the bugs above (the tool_call
+ordering crash in Part 5 especially) only make sense once the mechanics
+are clear.
+
+### Why a graph at all, instead of a plain while-loop calling the API
+
+A ReAct-style agent -- "call a tool, look at the result, decide whether
+to call another tool or answer" -- can technically be written as a plain
+Python `while True` loop calling the OpenAI API directly. LangGraph was
+used instead because it gives three things a hand-rolled loop has to
+reimplement badly, on its own, every time: automatic conversation-history
+accumulation (see below), a declarative way to express "what happens
+next depends on what the model just said" (conditional routing, instead
+of a growing pile of `if` statements), and a built-in safety limit on
+how many times the loop can run before it's forcibly stopped
+(`recursion_limit`), independent of any budget logic the project writes
+itself.
+
+### The building blocks actually used
+
+- **`StateGraph(State)`** -- the graph builder. `State` is a small class
+  that subclasses LangGraph's `MessagesState`, adding exactly one extra
+  field this project needed: `steps: int` (a turn counter, used for the
+  project's own step-cap logic, described below -- this is separate
+  from and in addition to LangGraph's own `recursion_limit`).
+- **`MessagesState`** -- LangGraph's prebuilt state schema, which is just
+  `{"messages": list[BaseMessage]}` under the hood, but with an
+  important detail: the `messages` field uses a special *reducer*
+  (`add_messages`) that **appends** new messages to the existing list
+  rather than replacing it, every time any node returns a `{"messages":
+  [...]}` dict. This is why a node's `call_agent` function can just
+  `return {"messages": [response]}` -- a single new message -- and the
+  full conversation history from every previous turn is still there on
+  the next call, with zero manual list-management code anywhere in this
+  project. Get this wrong (e.g. accidentally use a plain field instead
+  of `MessagesState`'s reducer-backed one) and every turn would wipe out
+  the previous ones instead of accumulating them.
+- **Two nodes: `"agent"` and `"tools"`.** `"agent"` is a Python function
+  (`call_agent` in `agent.py`, `call_model` in `agent_per_category.py`)
+  that calls the LLM and returns its response as a new message.
+  `"tools"` is LangGraph's prebuilt `ToolNode` -- it doesn't need custom
+  code at all; handed a list of tool functions, it automatically reads
+  the *last* message's `tool_calls`, executes whichever of those tools
+  were requested, and returns their results as `ToolMessage` objects
+  (each carrying a `tool_call_id` linking it back to the specific call
+  it's answering).
+- **Edges**: `START -> "agent"` (always begin by calling the model);
+  a *conditional* edge out of `"agent"`, evaluated by
+  `route_after_agent`/`route`, which inspects the last message's
+  `tool_calls` and decides whether to go to `"tools"` (an investigation
+  tool was called -- go fetch the data) or `END` (either no tool call
+  at all, or the terminal tool was called -- stop); and a plain edge
+  `"tools" -> "agent"` (after fetching data, always go back and let the
+  model decide what's next). Two nodes and three edges is the entire
+  graph -- the "reasoning loop" is just this cycle repeating until the
+  routing function sends it to `END`.
+
+### The termination design: a tool call as the stop signal, not parsed text
+
+A dedicated `submit_conclusion` tool (in `agent_per_category.py`, one
+`submit_finding`/`submit_finding_equipment` tool per investigator) is
+what the routing function actually watches for -- if the last message's
+tool calls include that specific tool, route to `END`. This was a
+deliberate choice over the alternative (have the model write a
+free-text final answer, and detect "is this the final answer" by some
+other means, e.g. a stop phrase or a separate classifier call): tying
+termination to a specific, named tool call means the *end of the loop
+and the structure of the final answer are the same event* -- there's no
+window where the agent has "stopped" without also having produced
+parseable, schema-shaped output. Every other design considered (stop
+sequences, a second "are you done?" LLM call, regex-detecting a
+conclusion in prose) either adds a place for the parse to fail
+silently, or adds another LLM call's worth of cost and latency just to
+ask "are you finished," which is exactly the kind of thing this project
+kept finding reasons to distrust an LLM to answer reliably (see Part 4's
+whole prompt-patching saga).
+
+### Forced tool choice: the exact lever the verification retries depend on
+
+`.bind_tools()` is what turns a plain chat model into one that can emit
+structured tool calls at all; by default, binding several tools lets the
+model freely choose whether to call one, and if so, which. This project
+uses that free-choice binding for the *investigating* phase (the model
+decides whether to look something up or to conclude). But the
+*concluding* phase uses a second, differently-bound model:
+`model.bind_tools([submit_conclusion], tool_choice="submit_conclusion")`
+-- passing `tool_choice` with the exact tool's name forces the model to
+call that tool, specifically, no matter what, every time this bound
+model is invoked. This is an OpenAI API feature (LangChain just exposes
+it), not a LangGraph feature.
+
+This forced-choice mechanism is the literal load-bearing piece under
+three separate things in this project: the step-cap fallback (Part 2,
+"call `submit_conclusion` now with your best hypothesis"), the
+narrated-but-not-called fix (Part 3, "call it now, the summary you just
+wrote is not a structured answer"), and the entire verification-retry
+loop (Part 5 and Part 7 round 2, "here's specifically what was wrong,
+call it again"). All three work by re-invoking this same forced-tool
+model with an appended correction message -- which is exactly what
+exposed the bug below.
+
+### The bug from Part 5, explained at the mechanics level
+
+Every entry in an `AIMessage.tool_calls` list carries an `id`. OpenAI's
+chat completions API enforces a hard rule: **an assistant message that
+contains tool calls must be immediately followed, in the message list,
+by one tool-role message per call, each one's `tool_call_id` matching
+one of those `id`s -- before any other message type is allowed to
+follow.** In the normal graph flow this is automatically satisfied,
+because `ToolNode` always answers every tool call it's handed. But
+`submit_conclusion`/`submit_finding` calls are *never* sent to
+`ToolNode` at all -- `route_after_agent` sends them straight to `END`
+instead of to `"tools"`, specifically because they're a termination
+signal, not a lookup to execute. That's fine as long as the graph
+actually ends right there, which it normally does.
+
+The verification-retry loop breaks that assumption: it takes the
+*already-ended* message list (which still ends in an AIMessage with an
+unanswered `submit_conclusion` tool call, because nothing ever answered
+it) and appends a plain `HumanMessage` correction directly after it,
+then calls the API again. The API looks at that message sequence, sees
+an unanswered tool call sitting right before a message that isn't a
+matching tool response, and rejects the whole request with a `400`. The
+fix -- a synthetic `ToolMessage` ("Rejected by verification -- see
+correction note"), addressed to that exact `tool_call_id`, inserted
+*before* the correction -- exists purely to satisfy this API-level
+contract. It's invisible to the model's actual reasoning; it's
+bookkeeping needed only because the message list is a shared, linear
+data structure being reused for a purpose (a correction loop) the
+original conversation shape didn't anticipate.
+
+### How parallelism actually happens (LangGraph doesn't do it for you)
+
+The per-category experiment (Part 7) runs three separate investigations
+concurrently. LangGraph itself has no idea this is happening -- there
+are three entirely separate compiled graphs (one per category, all built
+by the same reusable function), and the concurrency is implemented one
+level up, in plain Python, using `concurrent.futures.ThreadPoolExecutor`
+to call `.invoke()` on all three at once and collect the results. Each
+graph's `.invoke()` call is a normal, independent, blocking network
+call under the hood (an HTTP request to the OpenAI API); running three
+of them on separate threads means the three HTTP requests are in flight
+at the same time, so the total wall-clock time is roughly the slowest
+one, not the sum of all three -- but this is thread-level orchestration
+around LangGraph, not a feature LangGraph provides.
+
+---
+
+## Part 9: `eval.py` methodology, in detail
+
+The headline numbers throughout this document (44.4%, 61.1%, 72.2%,
+100%) all come from one script, and the way it's built shapes what those
+numbers actually mean -- worth being precise about, since "how do you
+evaluate an LLM agent" is exactly the kind of question this section
+answers.
+
+### Why a custom harness, and what it optimizes for
+
+This wasn't built by evaluating and rejecting existing eval frameworks
+-- it's a small, purpose-built script, chosen because the project needed
+a short, specific list of things no generic pass/fail harness gives you
+by default: multiple runs per case (see below), a way to distinguish a
+broken run from a genuinely wrong one, a way to distinguish "wrong
+evidence" from "wrong reasoning," and per-category breakdown, not just
+one aggregate number. All four of those turned out to matter a lot in
+practice -- the Human-storyline blind spot in Part 4 would have been
+much harder to notice from an aggregate score alone.
+
+### Why 3 runs per complaint, and what that number actually buys
+
+Day 2 testing had already directly observed `gpt-4o-mini` at
+`temperature=0` giving different answers to the identical complaint on
+back-to-back runs -- not a hypothesis, an observed fact from that
+project's own testing. A single pass/fail check per complaint would
+misrepresent reliability in either direction: a lucky single pass looks
+like a solved case, an unlucky single fail looks like a regression that
+isn't real. Three runs per complaint (18 complaints x 3 = 54 total
+investigations per full evaluation) was chosen as a pragmatic balance
+between statistical signal and real API cost/time -- not a statistically
+rigorous sample size. Worth being honest about the limit this implies:
+at n=3, a single complaint's own hit rate can only ever land on 0%,
+33.3%, 66.7%, or 100% -- a coarse measurement on its own. The
+per-category aggregation (below) is what actually makes the numbers
+meaningful, by pooling many complaints' worth of runs together rather
+than trusting any one complaint's 3-run score in isolation.
+
+### The two metrics recorded for every single run
+
+1. **Category match.** Not simply "does the predicted category string
+   equal the ground-truth string" -- the actual check, precisely, is:
+   ```
+   match = (not conclusion_failed)
+       and (not material_verification_failed)
+       and predicted_category.lower() == truth_category.lower()
+   ```
+   Both boolean exclusions exist because of real bugs found earlier in
+   the project (Part 2's coincidental-match bug, and the equivalent
+   concern for the mechanical verifier introduced in Part 5) -- a run
+   that produced no real structured answer, or produced one that failed
+   its own internal consistency check, must never count as a hit just
+   because a fallback label happened to agree with the truth.
+2. **Evidence surfaced.** This one doesn't look at the agent's
+   *conclusion* at all -- it looks at the raw tool call results
+   collected during the run and checks whether the specific record IDs
+   the (hidden, eval-only) answer key names as the real supporting
+   evidence ever actually came back from a tool call, anywhere in that
+   run, regardless of what the agent went on to do with them. The
+   implementation is a simple substring check: every tool result from
+   the run's evidence chain gets serialized into one JSON blob, and the
+   check is `all(supporting_id in blob for supporting_id in
+   the_true_supporting_ids)`. For storylines with no concrete supporting
+   IDs by design -- the mold-wear recurrence case and the red herring,
+   where the evidence is an absence or a pattern rather than a specific
+   record -- this metric reports `None` (not applicable) rather than
+   True or False, and `eval.py`'s aggregate `evidence_surfaced_rate`
+   only averages over the runs where it actually applies.
+
+   The reason this metric exists at all: it cleanly separates two
+   failure modes an accuracy number alone can't tell apart. If
+   `evidence_surfaced` is consistently `True` but the category is still
+   wrong (which is exactly what Part 4 found for the Human storyline,
+   and Part 7 found for round-1 Material), the problem is provably in
+   *reasoning*, not *retrieval* -- the tools worked, the data was there,
+   the model just drew the wrong conclusion from it. If it were `False`
+   instead, the fix would need to be a new or better tool (as in Part
+   2's mold-wear bug), not a prompt or verification change at all. Every
+   full evaluation run in this project reported `evidence_surfaced_rate:
+   100%` once the toolset stabilized after Part 2 -- meaning every
+   diagnosed failure from Part 4 onward was conclusively a reasoning
+   problem, which is exactly what justified spending effort on
+   prompt/verification fixes instead of chasing a phantom tool gap.
+
+### Per-category aggregation, and why it matters more than the headline number
+
+The 18 complaints are not evenly split across categories: 9 are
+Equipment (4 calibration-drift, 5 mold-wear), 3 are Human, 4 are
+Material, 2 are the red herring ("Insufficient evidence"). Because
+Equipment alone is exactly half the dataset, the single overall
+hit-rate number is disproportionately sensitive to Equipment's accuracy
+and can hide a category that's failing completely -- which is exactly
+what happened the first time `eval.py` ever ran: the overall number
+(44.4%) was unremarkable-looking on its own, but the per-category
+breakdown sitting right next to it showed Human at a flat 0%, impossible
+to miss once broken out. `eval.py` computes this by grouping every
+complaint by its *true* category first, then summing matches and totals
+across every run of every complaint in that group -- so a category's
+reported rate reflects every complaint that tests it, not just one.
+
+### Making the harness implementation-agnostic
+
+Comparing the single-agent design against the per-category experiment
+fairly required running the *exact same* harness against both, not two
+similar-but-different scripts that could quietly diverge. `eval.py`
+resolves which `investigate()` function to call via one line:
+```python
+investigate = importlib.import_module(
+    os.environ.get("AGENT_IMPL", "agent")).investigate
+```
+Defaulting to `agent` (the single-agent module) preserves the original
+behavior with zero changes to how it's normally run; setting
+`AGENT_IMPL=agent_per_category` points the identical scoring logic --
+same 3-runs-per-complaint loop, same two metrics, same per-category
+aggregation -- at the experimental module instead. Both of Part 7's
+real, comparable numbers (61.1% and 100%) exist because of this one
+line -- without it, any comparison between the two designs would have
+been an apples-to-oranges guess about whether differences in the score
+came from the architecture or from a subtly different test harness.
+
+### Cost/reliability diagnostics, tracked separately from accuracy
+
+Beyond the headline hit rate, `eval.py` also reports
+`conclusion_failed_rate`, `material_verification_failed_rate`, and
+`total_verification_retries_used`. These exist because accuracy alone
+can hide how *expensively* it was bought -- a design that hits 100% by
+retrying every single investigation multiple times is a meaningfully
+different result from one that hits 100% on the first attempt almost
+every time, even though the accuracy number alone can't tell them apart.
+This is exactly why Part 7's round-2 write-up reports "~0.67 correction
+attempts per investigation on average" right next to the 100% headline,
+rather than letting the accuracy number stand alone -- a decision to
+adopt that design should weigh both numbers, not just the more
+flattering one.
+
+### What this methodology deliberately does not do
+
+Worth naming plainly, since it's exactly the kind of follow-up question
+a real evaluation methodology should be able to answer honestly:
+
+- **No formal statistical testing.** No confidence intervals, no
+  significance test between e.g. 61.1% and 72.2% -- both numbers come
+  from real, run evaluations, and the gap was corroborated by re-running
+  a result twice to confirm stability (Part 4's second 61.1% run) rather
+  than by a statistical test, which is a real methodological gap for a
+  more rigorous evaluation.
+- **No held-out / unseen-complaint testing.** Every evaluation in this
+  project, including the 100% result, was run against the same 18
+  complaints that every fix along the way was diagnosed and tuned
+  against. This is explicitly called out as a caveat in Part 7 -- the
+  honest claim is "100% on this dataset," not "100% in general."
+- **No systematic latency measurement.** The parallel-dispatch design's
+  wall-clock benefit (Part 8) was reasoned about and observed
+  qualitatively, not measured and reported as a number the way the
+  accuracy and retry-count metrics are.
+- **Temperature fixed at 0 throughout**, specifically to make results as
+  reproducible as the underlying model allows -- but Day 2 and Day 3
+  both still observed real run-to-run variance at that setting, which is
+  reported honestly (Part 4) rather than assumed away by the
+  temperature choice.
+
+---
+
 ## Key principles, distilled (for explaining this out loud)
 
 1. **Test everything that can be tested without a model call, first, and

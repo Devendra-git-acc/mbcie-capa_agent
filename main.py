@@ -19,7 +19,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.staticfiles import StaticFiles
 
 REPO_ROOT = Path(__file__).parent
 
@@ -217,6 +219,20 @@ def get_review_queue():
     if not path.exists():
         return {"review_queue": {}, "note": "No batch has been run yet."}
     return {"review_queue": json.loads(path.read_text())}
+
+
+# Demo console -- a single static page covering both tasks (complaint
+# picker + investigation results + Task 1 review queue; sample-doc picker +
+# real file upload + extraction results + Task 2 review queue), talking
+# directly to the endpoints above with Basic Auth entered in the page
+# itself. Mounted under /ui rather than "/" so it can never shadow an API
+# route; "/" redirects there for convenience.
+app.mount("/ui", StaticFiles(directory=str(REPO_ROOT / "static"), html=True), name="ui")
+
+
+@app.get("/", include_in_schema=False)
+def root():
+    return RedirectResponse(url="/ui/")
 
 
 if __name__ == "__main__":

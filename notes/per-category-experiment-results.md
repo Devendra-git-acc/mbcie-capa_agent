@@ -179,3 +179,88 @@ same eval, same model. The per-category design is the stronger result now
 the two caveats above: does it hold up on complaints it wasn't tuned
 against, and is the added call volume worth it for this project's actual
 needs.
+
+## Round 3: the actual answer to round 2's biggest caveat -- 88.9% on genuinely unseen data
+
+Round 2's honest caveat was: "100% on the data the fixes were tuned
+against is a different claim than 100% on complaints it's never seen."
+That's no longer a hypothetical. `rca/generate_data_unseen.py` generates
+a second, held-out batch -- 18 new complaints, same category proportions
+as the original (9 Equipment, 3 Human, 4 Material, 2 red herring), on 6
+entirely new machines (M07-M12), new weeks, and deliberately different
+defect-description wording per storyline (not the same string with the
+machine ID swapped -- genuinely new phrasing, since Material's verifier
+checks exact string equality and a literal copy would be a weaker test
+of generalization). It's appended to the existing data files (zero
+changes to the original 18 complaints -- confirmed via `git diff`
+showing only insertions, never deletions) with a separate
+`answer_key_unseen.json`, so it's unambiguous which complaints were part
+of the tuned-against set. `validate_dataset.py` and `eval.py` both now
+support pointing at either answer key via an env var
+(`ANSWER_KEY=answer_key_unseen.json`), the same switch pattern as
+`AGENT_IMPL`.
+
+**One real data bug was caught building this, by the same validator that
+caught the original two Day-1 bugs**: the first draft of the new
+calibration-drift storyline (storyline 6) put its fix event too far past
+the earliest of its two complaint weeks -- 2 days outside the 14-day
+search-padding window the agent's prompt actually uses. `validate_dataset.py`
+caught it immediately (`C019: claimed supporting downtime D0276 not
+found in M07 window...`), it was fixed by moving the fix event one week
+earlier, and both the original and new datasets were reverified clean
+afterward. Good reminder that hand-designing "planted evidence" data is
+itself error-prone, and worth validating with the same rigor as the code
+that reads it.
+
+**Real result, run 3 (same eval.py, same 3-runs-per-complaint discipline,
+same `gpt-4o-mini`, against `ANSWER_KEY=answer_key_unseen.json`): 88.9%
+overall (48/54 investigations)** -- Equipment 100%, Human 100%,
+Insufficient evidence 100%, Material 50%. This is the real answer to
+round 2's caveat: the design was NOT simply memorizing the 18 complaints
+it was tuned against. It generalizes well on 3 of 4 categories, on data
+built after every fix in this project was already finished, with
+different machines and different symptom wording throughout.
+
+**The one gap, diagnosed precisely rather than left as a mystery**:
+Material dropped to 50% specifically because of a consistent, direction-
+dependent failure -- investigating FROM M09 (`C026`, `C027`) failed all 3
+runs each; investigating FROM M10 (`C028`, `C029`), the exact same real
+storyline, succeeded all 3 runs each. Checked directly whether this was
+a data asymmetry (it would be an easy, boring explanation): it isn't --
+a direct query confirms both directions see an identically-shaped set of
+other complaints in their window. Checked directly whether the tool
+actually retrieved the correct cross-machine complaint for a failing
+case: it did -- `C026`'s own evidence chain shows `query_complaints`
+genuinely returning `C028` (M10, matching `defect_description`) in the
+raw tool result, and the Material investigator still reported "no
+evidence of a different-machine complaint... found." This is a real,
+reproducible reasoning failure on unseen data, not a data bug and not a
+retrieval bug -- confirmed, not assumed, by checking both of the more
+boring explanations first and ruling them out before accepting the
+harder one.
+
+### What this actually settles, and what it doesn't
+
+- **Settles**: the "is this just overfit to 18 complaints" question from
+  round 2, for 3 of 4 categories, with real evidence rather than
+  continued caveating. Equipment, Human, and the red-herring case all
+  generalize cleanly.
+- **Doesn't settle**: why Material's failure is directionally consistent
+  rather than randomly distributed across both machines. That's a real,
+  open, diagnosed-but-not-explained question -- not chased further here,
+  in the same spirit as every other point in this project where a
+  result was reported honestly rather than patched immediately to make
+  the number look better.
+- **A secondary limitation of the eval methodology itself, surfaced by
+  this exercise**: `evidence_surfaced` (Part 9 of the engineering
+  journal) can't actually diagnose Material's failures at all, because
+  the answer key was only ever designed to record `supporting_downtime_ids`
+  /`supporting_shift_ids` -- Material's real evidence (a matching complaint
+  on a different machine) was never encoded as a checkable ID field, in
+  either answer key. The diagnosis above had to be done by hand (a direct
+  tool query, a direct evidence-chain read) precisely because the
+  automated diagnostic that exists for every other category doesn't
+  cover this one. Worth fixing in a future iteration: extend the answer
+  key schema with a `supporting_complaint_ids` field so Material's
+  evidence-surfaced rate becomes measurable automatically instead of
+  needing a manual investigation every time.

@@ -160,5 +160,167 @@
     "defect_description": "Wheel bearing noise / roughness reported by customer within first week of use.",
     "customer_or_dealer": "Dealer-Pune-02",
     "severity": "medium"
+  },
+  {
+    "complaint_id": "C019",
+    "date_reported": "2026-05-23",
+    "batch_code": "M07-2026W21",
+    "product_line": "tyre",
+    "defect_description": "Sidewall blistering with air trapped beneath the rubber surface, discovered during routine post-cure inspection; consistent with an under-vulcanized batch.",
+    "customer_or_dealer": "Dealer-Nashik-04",
+    "severity": "high"
+  },
+  {
+    "complaint_id": "C020",
+    "date_reported": "2026-05-23",
+    "batch_code": "M07-2026W21",
+    "product_line": "tyre",
+    "defect_description": "Sidewall blistering with air trapped beneath the rubber surface, discovered during routine post-cure inspection; consistent with an under-vulcanized batch.",
+    "customer_or_dealer": "Dealer-Ahmedabad-03",
+    "severity": "high"
+  },
+  {
+    "complaint_id": "C021",
+    "date_reported": "2026-05-28",
+    "batch_code": "M07-2026W22",
+    "product_line": "tyre",
+    "defect_description": "Sidewall blistering with air trapped beneath the rubber surface, discovered during routine post-cure inspection; consistent with an under-vulcanized batch.",
+    "customer_or_dealer": "Dealer-Ahmedabad-03",
+    "severity": "high"
+  },
+  {
+    "complaint_id": "C022",
+    "date_reported": "2026-05-27",
+    "batch_code": "M07-2026W22",
+    "product_line": "tyre",
+    "defect_description": "Sidewall blistering with air trapped beneath the rubber surface, discovered during routine post-cure inspection; consistent with an under-vulcanized batch.",
+    "customer_or_dealer": "Dealer-Ahmedabad-03",
+    "severity": "high"
+  },
+  {
+    "complaint_id": "C023",
+    "date_reported": "2026-06-04",
+    "batch_code": "M08-2026W23",
+    "product_line": "cycle",
+    "defect_description": "Weld porosity visible at chainstay/bottom-bracket joint during final QC; inconsistent penetration noted, bead appears cold.",
+    "customer_or_dealer": "Dealer-Ahmedabad-03",
+    "severity": "high"
+  },
+  {
+    "complaint_id": "C024",
+    "date_reported": "2026-06-05",
+    "batch_code": "M08-2026W23",
+    "product_line": "cycle",
+    "defect_description": "Weld porosity visible at chainstay/bottom-bracket joint during final QC; inconsistent penetration noted, bead appears cold.",
+    "customer_or_dealer": "Dealer-Vadodara-01",
+    "severity": "high"
+  },
+  {
+    "complaint_id": "C025",
+    "date_reported": "2026-06-07",
+    "batch_code": "M08-2026W23",
+    "product_line": "cycle",
+    "defect_description": "Weld porosity visible at chainstay/bottom-bracket joint during final QC; inconsistent penetration noted, bead appears cold.",
+    "customer_or_dealer": "Dealer-Pune-02",
+    "severity": "high"
+  },
+  {
+    "complaint_id": "C026",
+    "date_reported": "2026-06-20",
+    "batch_code": "M09-2026W25",
+    "product_line": "tyre",
+    "defect_description": "Bead area cracking observed near the rim seat shortly after mounting; no installation damage reported by fitter.",
+    "customer_or_dealer": "Dealer-Indore-07",
+    "severity": "high"
+  },
+  {
+    "complaint_id": "C027",
+    "date_reported": "2026-06-18",
+    "batch_code": "M09-2026W25",
+    "product_line": "tyre",
+    "defect_description": "Bead area cracking observed near the rim seat shortly after mounting; no installation damage reported by fitter.",
+    "customer_or_dealer": "Dealer-Surat-01",
+    "severity": "high"
+  },
+  {
+    "complaint_id": "C028",
+    "date_reported": "2026-06-19",
+    "batch_code": "M10-2026W25",
+    "product_line": "tyre",
+    "defect_description": "Bead area cracking observed near the rim seat shortly after mounting; no installation damage reported by fitter.",
+    "customer_or_dealer": "Dealer-Indore-07",
+    "severity": "high"
+  },
+  {
+    "complaint_id": "C029",
+    "date_reported": "2026-06-20",
+    "batch_code": "M10-2026W25",
+    "product_line": "tyre",
+    "defect_description": "Bead area cracking observed near the rim seat shortly after mounting; no installation damage reported by fitter.",
+    "customer_or_dealer": "Dealer-Surat-01",
+    "severity": "high"
+  },
+  {
+    "complaint_id": "C030",
+    "date_reported": "2026-05-21",
+    "batch_code": "M11-2026W21",
+    "product_line": "tyre",
+    "defect_description": "Slight tread thickness variation noted across circumference during QC scan; localized thinning on one shoulder, otherwise within tolerance.",
+    "customer_or_dealer": "Dealer-Nashik-04",
+    "severity": "low"
+  },
+  {
+    "complaint_id": "C031",
+    "date_reported": "2026-06-05",
+    "batch_code": "M11-2026W23",
+    "product_line": "tyre",
+    "defect_description": "Slight tread thickness variation noted across circumference during QC scan; localized thinning on one shoulder, otherwise within tolerance.",
+    "customer_or_dealer": "Dealer-Nashik-04",
+    "severity": "low"
+  },
+  {
+    "complaint_id": "C032",
+    "date_reported": "2026-06-24",
+    "batch_code": "M11-2026W26",
+    "product_line": "tyre",
+    "defect_description": "Slight tread thickness variation noted across circumference during QC scan; localized thinning on one shoulder, otherwise within tolerance.",
+    "customer_or_dealer": "Dealer-Rajkot-02",
+    "severity": "low"
+  },
+  {
+    "complaint_id": "C033",
+    "date_reported": "2026-07-08",
+    "batch_code": "M11-2026W28",
+    "product_line": "tyre",
+    "defect_description": "Slight tread thickness variation noted across circumference during QC scan; localized thinning on one shoulder, otherwise within tolerance.",
+    "customer_or_dealer": "Dealer-Nagpur-05",
+    "severity": "low"
+  },
+  {
+    "complaint_id": "C034",
+    "date_reported": "2026-07-23",
+    "batch_code": "M11-2026W30",
+    "product_line": "tyre",
+    "defect_description": "Slight tread thickness variation noted across circumference during QC scan; localized thinning on one shoulder, otherwise within tolerance.",
+    "customer_or_dealer": "Dealer-Indore-07",
+    "severity": "low"
+  },
+  {
+    "complaint_id": "C035",
+    "date_reported": "2026-07-02",
+    "batch_code": "M12-2026W27",
+    "product_line": "cycle",
+    "defect_description": "Front hub bearing grinding noise reported by customer after roughly two weeks of use; no visible damage found on inspection.",
+    "customer_or_dealer": "Dealer-Nashik-04",
+    "severity": "medium"
+  },
+  {
+    "complaint_id": "C036",
+    "date_reported": "2026-07-02",
+    "batch_code": "M12-2026W27",
+    "product_line": "cycle",
+    "defect_description": "Front hub bearing grinding noise reported by customer after roughly two weeks of use; no visible damage found on inspection.",
+    "customer_or_dealer": "Dealer-Nagpur-05",
+    "severity": "medium"
   }
 ]

@@ -1,0 +1,145 @@
+{
+  "C019": {
+    "root_cause_category": "Equipment",
+    "root_cause": "Curing press (M07) pressure sensor calibration drifted low, producing an under-vulcanized batch and trapped-air blistering. Drift was undetected until the week 23 calibration check.",
+    "supporting_downtime_ids": [
+      "D0276"
+    ],
+    "supporting_shift_ids": [],
+    "notes": "Analog of the original storyline 1 (M02, calibration drift) -- new machine, new week, different wording (pressure vs temperature sensor, blistering vs tread separation)."
+  },
+  "C020": {
+    "root_cause_category": "Equipment",
+    "root_cause": "Curing press (M07) pressure sensor calibration drifted low, producing an under-vulcanized batch and trapped-air blistering. Drift was undetected until the week 23 calibration check.",
+    "supporting_downtime_ids": [
+      "D0276"
+    ],
+    "supporting_shift_ids": [],
+    "notes": "Analog of the original storyline 1 (M02, calibration drift) -- new machine, new week, different wording (pressure vs temperature sensor, blistering vs tread separation)."
+  },
+  "C021": {
+    "root_cause_category": "Equipment",
+    "root_cause": "Curing press (M07) pressure sensor calibration drifted low, producing an under-vulcanized batch and trapped-air blistering. Drift was undetected until the week 23 calibration check.",
+    "supporting_downtime_ids": [
+      "D0276"
+    ],
+    "supporting_shift_ids": [],
+    "notes": "Analog of the original storyline 1 (M02, calibration drift) -- new machine, new week, different wording (pressure vs temperature sensor, blistering vs tread separation)."
+  },
+  "C022": {
+    "root_cause_category": "Equipment",
+    "root_cause": "Curing press (M07) pressure sensor calibration drifted low, producing an under-vulcanized batch and trapped-air blistering. Drift was undetected until the week 23 calibration check.",
+    "supporting_downtime_ids": [
+      "D0276"
+    ],
+    "supporting_shift_ids": [],
+    "notes": "Analog of the original storyline 1 (M02, calibration drift) -- new machine, new week, different wording (pressure vs temperature sensor, blistering vs tread separation)."
+  },
+  "C023": {
+    "root_cause_category": "Human",
+    "root_cause": "Frame welding (M08) night shift in week 23 was staffed by a trainee operator (OP030, 2 months experience) with no senior sign-off logged. No mechanical or maintenance event on M08 that week.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [
+      "S1587",
+      "S1590"
+    ],
+    "notes": "Analog of the original storyline 2 (M05, trainee welder) -- new machine, new week, different weld-defect wording (porosity/cold bead vs crack/under-penetration)."
+  },
+  "C024": {
+    "root_cause_category": "Human",
+    "root_cause": "Frame welding (M08) night shift in week 23 was staffed by a trainee operator (OP030, 2 months experience) with no senior sign-off logged. No mechanical or maintenance event on M08 that week.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [
+      "S1587",
+      "S1590"
+    ],
+    "notes": "Analog of the original storyline 2 (M05, trainee welder) -- new machine, new week, different weld-defect wording (porosity/cold bead vs crack/under-penetration)."
+  },
+  "C025": {
+    "root_cause_category": "Human",
+    "root_cause": "Frame welding (M08) night shift in week 23 was staffed by a trainee operator (OP030, 2 months experience) with no senior sign-off logged. No mechanical or maintenance event on M08 that week.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [
+      "S1587",
+      "S1590"
+    ],
+    "notes": "Analog of the original storyline 2 (M05, trainee welder) -- new machine, new week, different weld-defect wording (porosity/cold bead vs crack/under-penetration)."
+  },
+  "C026": {
+    "root_cause_category": "Material",
+    "root_cause": "Both M09 and M10 (different machines, different operators, no downtime events) produced affected batches in week 25, pointing to a shared input rather than a machine or operator issue -- consistent with a defective incoming bead-wire lot feeding both lines that week.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [],
+    "notes": "Analog of the original storyline 3 (M01+M03, compound batch) -- new machines, new week, different symptom wording (bead-area cracking vs sidewall cracking)."
+  },
+  "C027": {
+    "root_cause_category": "Material",
+    "root_cause": "Both M09 and M10 (different machines, different operators, no downtime events) produced affected batches in week 25, pointing to a shared input rather than a machine or operator issue -- consistent with a defective incoming bead-wire lot feeding both lines that week.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [],
+    "notes": "Analog of the original storyline 3 (M01+M03, compound batch) -- new machines, new week, different symptom wording (bead-area cracking vs sidewall cracking)."
+  },
+  "C028": {
+    "root_cause_category": "Material",
+    "root_cause": "Both M09 and M10 (different machines, different operators, no downtime events) produced affected batches in week 25, pointing to a shared input rather than a machine or operator issue -- consistent with a defective incoming bead-wire lot feeding both lines that week.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [],
+    "notes": "Analog of the original storyline 3 (M01+M03, compound batch) -- new machines, new week, different symptom wording (bead-area cracking vs sidewall cracking)."
+  },
+  "C029": {
+    "root_cause_category": "Material",
+    "root_cause": "Both M09 and M10 (different machines, different operators, no downtime events) produced affected batches in week 25, pointing to a shared input rather than a machine or operator issue -- consistent with a defective incoming bead-wire lot feeding both lines that week.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [],
+    "notes": "Analog of the original storyline 3 (M01+M03, compound batch) -- new machines, new week, different symptom wording (bead-area cracking vs sidewall cracking)."
+  },
+  "C030": {
+    "root_cause_category": "Equipment",
+    "root_cause": "Recurring low-severity complaints on M11 spread across 5 non-adjacent weeks, multiple different shifts and operators, with no discrete downtime or maintenance event and no shared material batch -- pattern is consistent with gradual mold wear rather than a single triggering event.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [],
+    "notes": "Analog of the original storyline 4 (M04, mold wear) -- new machine, new weeks, different wording (thickness variation vs uneven tread wear)."
+  },
+  "C031": {
+    "root_cause_category": "Equipment",
+    "root_cause": "Recurring low-severity complaints on M11 spread across 5 non-adjacent weeks, multiple different shifts and operators, with no discrete downtime or maintenance event and no shared material batch -- pattern is consistent with gradual mold wear rather than a single triggering event.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [],
+    "notes": "Analog of the original storyline 4 (M04, mold wear) -- new machine, new weeks, different wording (thickness variation vs uneven tread wear)."
+  },
+  "C032": {
+    "root_cause_category": "Equipment",
+    "root_cause": "Recurring low-severity complaints on M11 spread across 5 non-adjacent weeks, multiple different shifts and operators, with no discrete downtime or maintenance event and no shared material batch -- pattern is consistent with gradual mold wear rather than a single triggering event.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [],
+    "notes": "Analog of the original storyline 4 (M04, mold wear) -- new machine, new weeks, different wording (thickness variation vs uneven tread wear)."
+  },
+  "C033": {
+    "root_cause_category": "Equipment",
+    "root_cause": "Recurring low-severity complaints on M11 spread across 5 non-adjacent weeks, multiple different shifts and operators, with no discrete downtime or maintenance event and no shared material batch -- pattern is consistent with gradual mold wear rather than a single triggering event.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [],
+    "notes": "Analog of the original storyline 4 (M04, mold wear) -- new machine, new weeks, different wording (thickness variation vs uneven tread wear)."
+  },
+  "C034": {
+    "root_cause_category": "Equipment",
+    "root_cause": "Recurring low-severity complaints on M11 spread across 5 non-adjacent weeks, multiple different shifts and operators, with no discrete downtime or maintenance event and no shared material batch -- pattern is consistent with gradual mold wear rather than a single triggering event.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [],
+    "notes": "Analog of the original storyline 4 (M04, mold wear) -- new machine, new weeks, different wording (thickness variation vs uneven tread wear)."
+  },
+  "C035": {
+    "root_cause_category": "Insufficient evidence",
+    "root_cause": "No anomaly in downtime or shift records for M12 in week 27: experienced operator, no mechanical or maintenance events, no cross-machine pattern. The true cause (if any) sits outside these three sources -- most likely an incoming bearing lot defect, which this plant's systems don't track.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [],
+    "notes": "Analog of the original storyline 5 (M06, red herring) -- new machine, new week, different wording (front hub, two weeks of use vs wheel bearing, first week of use)."
+  },
+  "C036": {
+    "root_cause_category": "Insufficient evidence",
+    "root_cause": "No anomaly in downtime or shift records for M12 in week 27: experienced operator, no mechanical or maintenance events, no cross-machine pattern. The true cause (if any) sits outside these three sources -- most likely an incoming bearing lot defect, which this plant's systems don't track.",
+    "supporting_downtime_ids": [],
+    "supporting_shift_ids": [],
+    "notes": "Analog of the original storyline 5 (M06, red herring) -- new machine, new week, different wording (front hub, two weeks of use vs wheel bearing, first week of use)."
+  }
+}

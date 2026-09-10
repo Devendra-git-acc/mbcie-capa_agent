@@ -34,6 +34,11 @@ Run with:
     AGENT_IMPL=agent_per_category python eval.py   # test the per-category
                                                     # investigator experiment
                                                     # instead (see agent_per_category.py)
+    ANSWER_KEY=answer_key_unseen.json python eval.py   # evaluate against the
+                                                        # held-out generalization
+                                                        # set instead of the
+                                                        # tuned-against one (see
+                                                        # generate_data_unseen.py)
 """
 import importlib
 import json
@@ -45,10 +50,11 @@ investigate = importlib.import_module(os.environ.get("AGENT_IMPL", "agent")).inv
 
 DEFAULT_RUNS = 3
 BASE = Path(__file__).parent
+ANSWER_KEY_FILE = os.environ.get("ANSWER_KEY", "answer_key.json")
 
 
 def load_answer_key() -> dict:
-    return json.loads((BASE / "answer_key.json").read_text())
+    return json.loads((BASE / ANSWER_KEY_FILE).read_text())
 
 
 def evidence_was_surfaced(evidence_chain: list[dict], truth: dict) -> bool | None:
@@ -139,7 +145,14 @@ def main():
                                    for cat in per_category_totals},
         "per_complaint": per_complaint,
     }
-    (BASE / "eval_results.json").write_text(json.dumps(summary, indent=2))
+    # Different answer key -> different output file, so evaluating the
+    # held-out set never clobbers the historical eval_results.json that
+    # the journal and status docs reference by name.
+    if ANSWER_KEY_FILE == "answer_key.json":
+        output_name = "eval_results.json"
+    else:
+        output_name = f"eval_results_{ANSWER_KEY_FILE.replace('answer_key_', '').replace('.json', '')}.json"
+    (BASE / output_name).write_text(json.dumps(summary, indent=2))
 
     print("\n" + "=" * 70)
     print(f"Overall hit rate: {summary['overall_hit_rate']:.1%}  "
@@ -153,7 +166,7 @@ def main():
     print("Per-category hit rate:")
     for cat, rate in summary["per_category_hit_rate"].items():
         print(f"  {cat}: {rate:.1%}")
-    print(f"\nFull results written to {BASE / 'eval_results.json'}")
+    print(f"\nFull results written to {BASE / output_name}")
 
 
 if __name__ == "__main__":

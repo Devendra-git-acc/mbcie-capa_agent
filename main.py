@@ -15,6 +15,7 @@ import secrets
 import shutil
 import sys
 import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
@@ -55,6 +56,40 @@ if not _effective_password:
 _complaints = json.loads((REPO_ROOT / "rca" / "data" / "complaints.json").read_text())
 _complaint_ids = [c["complaint_id"] for c in _complaints]
 
+# Task 1's mirror of extraction/output/review_queue.json. Task 2 builds its
+# queue once per batch run (run_batch() over all 10 fixtures at once); Task 1
+# has no batch runner -- investigations happen one complaint at a time via
+# this API -- so the queue is instead built incrementally, updated after
+# every POST /investigate/{complaint_id} call rather than written in one
+# shot. A complaint that needed review on one run and gets re-investigated
+# with a clean result is removed from the queue -- the queue reflects the
+# most recent investigation of each complaint, not a history of every flag
+# ever raised.
+RCA_OUTPUT_DIR = REPO_ROOT / "rca" / "output"
+RCA_OUTPUT_DIR.mkdir(exist_ok=True)
+RCA_REVIEW_QUEUE_PATH = RCA_OUTPUT_DIR / "review_queue.json"
+
+
+def _load_rca_review_queue() -> dict:
+    if not RCA_REVIEW_QUEUE_PATH.exists():
+        return {}
+    return json.loads(RCA_REVIEW_QUEUE_PATH.read_text())
+
+
+def _update_rca_review_queue(complaint_id: str, result: dict) -> None:
+    queue = _load_rca_review_queue()
+    if result.get("needs_human_review"):
+        queue[complaint_id] = {
+            "root_cause_category": result["conclusion"].get("root_cause_category"),
+            "confidence_score": result.get("confidence_score"),
+            "review_reasons": result.get("review_reasons"),
+            "investigated_at": datetime.now(timezone.utc).isoformat(),
+        }
+    else:
+        queue.pop(complaint_id, None)
+    RCA_REVIEW_QUEUE_PATH.write_text(json.dumps(queue, indent=2))
+
+
 app = FastAPI(title="MBCIE CAPA RCA Agent", version="0.1.0")
 _security = HTTPBasic()
 
@@ -85,7 +120,9 @@ def run_investigation(complaint_id: str):
         raise HTTPException(status_code=404, detail=f"Unknown complaint_id: {complaint_id!r}. "
                                                       f"See GET /complaints for valid IDs.")
     try:
-        return investigate(complaint_id)
+        result = investigate(complaint_id)
+        _update_rca_review_queue(complaint_id, result)
+        return result
     except Exception as e:
         # An upstream LLM-provider failure (rate limit, bad/missing API key,
         # network error, timeout) must not leak a raw 500 + stack trace to
@@ -94,6 +131,18 @@ def run_investigation(complaint_id: str):
         raise HTTPException(status_code=502,
                              detail=f"Investigation failed -- upstream LLM provider error: "
                                     f"{type(e).__name__}: {e}")
+
+
+@app.get("/investigate/review-queue", dependencies=[Depends(require_auth)])
+def get_rca_review_queue():
+    """Complaints whose most recent investigation was flagged by the
+    deterministic review gate (rca/agent.py's _human_review_reasons()) --
+    conclusion_failed, unresolved material_verification_failed, low
+    composite confidence_score, or genuine "Insufficient evidence". Built
+    incrementally from POST /investigate/{complaint_id} calls -- see
+    _update_rca_review_queue() above. Task 1's equivalent of Task 2's
+    GET /review-queue."""
+    return {"review_queue": _load_rca_review_queue()}
 
 
 @app.get("/documents", dependencies=[Depends(require_auth)])

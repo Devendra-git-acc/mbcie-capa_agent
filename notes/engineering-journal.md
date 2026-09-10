@@ -175,6 +175,56 @@ asked. Implementation notes worth keeping:
   `pip install` time for anything already in `requirements.txt`. Caught
   and added before it could surprise a reviewer.
 
+### Task 2's confidence-scoring design, in more depth
+
+Task 1 gets most of this document's depth because most of the hard,
+surprising problems happened there -- but Task 2's confidence score is
+its own real piece of design reasoning, worth being precise about since
+it's the mechanism the brief specifically asked for ("route low-
+confidence documents to a human-review queue instead of guessing").
+
+**The score is a composite of three independent, individually-explainable
+signals, deliberately not a single self-reported LLM confidence
+number:**
+
+1. **Source reliability.** A digital PDF's text layer is exact --
+   there's no recognition step to be wrong about, so digital extraction
+   gets a fixed high baseline (0.98). A scanned document's reliability
+   instead comes from Tesseract's own per-word OCR confidence, averaged
+   across every recognized word on every page -- a real, measured
+   number, not an assumption that "OCR is roughly trustworthy."
+2. **Completeness.** What fraction of the required fields (vendor,
+   date, totals, at least one line item) actually got populated. A
+   document can have perfect OCR and still be incomplete if a field
+   simply isn't on the page -- this signal is deliberately independent
+   of how *clean* the source was.
+3. **Arithmetic consistency.** Does `subtotal + tax == total`, and do
+   the line items sum to the subtotal, within a small tolerance? This is
+   the cheapest, most mechanical of the three signals, and it's often
+   the one that catches an OCR misread that the other two would miss --
+   a single misread digit produces a real number in a real field
+   (passing completeness) that just doesn't add up.
+
+**Why not simply ask the model to self-report a confidence score**,
+which would be far less code: because LLM self-reported confidence is
+well known to be poorly calibrated -- a model can be, and often is,
+extremely confident while being wrong, which is exactly the failure mode
+a review-queue mechanism exists to catch. A composite of independently
+checkable signals can be wrong too, but each piece of it is individually
+auditable by a human -- "this was flagged because OCR confidence was
+0.56" is a reviewable, falsifiable reason; "the model said it was 60%
+sure" is not.
+
+**Format detection is also a real, deliberate decision**, not just a
+file-extension check: a `.pdf` is only trusted as "digital" if directly
+extracting its text layer yields more than a small character threshold
+-- a PDF that technically has the right extension but is actually a
+scanned image with no real text layer (a real thing that happens with
+scanned-then-saved-as-PDF documents) gets correctly routed through OCR
+instead of silently returning almost nothing. This was validated
+directly with a constructed test case (a blank PDF page) rather than
+assumed to work from reading the code.
+
 ### The senior-engineer review pass: four more real bugs, found by re-reading, not by running
 
 At one point the work paused specifically to re-read every file touched
@@ -436,16 +486,30 @@ why -- was written up rather than chased further with more prompting.**
 
 ## Part 5: the verification-loop breakthrough -- checking facts in code instead of asking the model to try harder
 
-Independently of continued prompt tuning, a different kind of fix was
-introduced: instead of relying on the model to reason its way past its
-own bias, add a small piece of **deterministic, non-LLM code** that
-mechanically checks whether a "Material" conclusion's cited evidence
-actually holds up -- does the cited complaint reference a genuinely
-different `machine_id`, with a matching symptom, compared to the
-complaint under investigation? If not, the conclusion is rejected with a
-specific, concrete reason, and the model gets one bounded retry
-(`MAX_VERIFICATION_RETRIES = 2`) with that exact reason fed back, rather
-than being asked to "try harder" in the abstract.
+**Whose idea this was, precisely, since it matters for explaining it
+honestly**: this design -- add a small piece of deterministic, non-LLM
+code that mechanically checks a conclusion's cited evidence instead of
+relying on more prompting -- was designed and implemented directly, not
+proposed and then built by request. It showed up as a change to
+`agent.py` between one review and the next, with the framing "I've
+updated the agent design and logic, check and verify whether the system
+is improved." The verification role from that point on was: read the new
+code, understand exactly what it does and why, test it (first with
+mocks, then live), find a real bug in it (below), fix that bug, and then
+run the full evaluation to get an honest before/after number. That's a
+meaningfully different (and worth being precise about) split of credit
+than "built this" -- the idea and the implementation were not mine; the
+crash diagnosis, the fix for it, and the measurement of its real impact
+were.
+
+The mechanism itself: a function that mechanically checks whether a
+"Material" conclusion's cited evidence actually holds up -- does the
+cited complaint reference a genuinely different `machine_id`, with a
+matching symptom, compared to the complaint under investigation? If not,
+the conclusion is rejected with a specific, concrete reason, and the
+model gets one bounded retry (`MAX_VERIFICATION_RETRIES = 2`) with that
+exact reason fed back, rather than being asked to "try harder" in the
+abstract.
 
 This is a different *kind* of fix from everything in Part 4, not just a
 fourth iteration of the same kind. Prompting asks the model to reason
@@ -493,15 +557,28 @@ attempt, every time -- the full evaluation was run again:
 to 77.8%, fixed without the regression this fix's predecessors kept
 causing elsewhere. **"Insufficient evidence" -- the red herring, never
 solved correctly across an entire project's worth of prompt tuning --
-jumped to 83.3%.** Material dropped somewhat (to 50%), diagnosed
-precisely rather than left as a mystery: on C008/C009, the model's first
-citation named only same-machine complaints (correctly rejected), but on
-the retry it abandoned "Material" as a category entirely instead of
-going back to find the genuine cross-machine evidence (`C010`/`C011`)
-that was sitting in its own already-retrieved tool results -- a
-correction-*message*-wording gap (it wasn't being told clearly enough to
-look harder for the right citation, just to "reconsider"), not a flaw in
-the verification logic itself.
+jumped to 83.3%.** Two categories moved the other way, and both are
+worth reporting, not just the one that's easier to explain:
+
+- **Material dropped to 50%**, diagnosed precisely rather than left as a
+  mystery: on C008/C009, the model's first citation named only
+  same-machine complaints (correctly rejected), but on the retry it
+  abandoned "Material" as a category entirely instead of going back to
+  find the genuine cross-machine evidence (`C010`/`C011`) that was
+  sitting in its own already-retrieved tool results -- a
+  correction-*message*-wording gap (it wasn't being told clearly enough
+  to look harder for the right citation, just to "reconsider"), not a
+  flaw in the verification logic itself.
+- **Human dropped from 100% to 77.8%.** This one wasn't diagnosed as
+  precisely at the time -- the verifier that shipped in this round only
+  checked Material conclusions; Human and Equipment conclusions had no
+  mechanical check at all yet, so a Human regression here had no
+  structured log to point at the way the Material one did. The honest
+  state at this point in the project: one category was verified and
+  self-correcting, three were not, and the not-yet-verified ones could
+  still silently regress for reasons the system had no way to surface.
+  This gap is exactly what Part 7 round 2 later closed, by extending the
+  same verify-and-retry pattern to every category instead of just one.
 
 ---
 
@@ -1025,6 +1102,120 @@ a real evaluation methodology should be able to answer honestly:
 
 ---
 
+## Part 10: shipping it -- deployment, environment discipline, and tooling noise
+
+A meaningful chunk of real engineering time on this project went into
+things that aren't "the agent" or "the pipeline" at all: making sure the
+system actually runs the same way for someone else as it does locally,
+and telling the difference between a real bug and a tool complaining
+about nothing.
+
+### Why Docker, specifically
+
+Task 2's scanned-document path needs Tesseract, an OCR engine -- a
+system binary, not something `pip install` can put on a machine. That's
+the entire reason a `Dockerfile` exists in this project at all: the
+brief's reproducibility requirement ("a reviewer should get it running
+in under 10 minutes") can't be met by a plain `requirements.txt` alone
+once one of the dependencies isn't a Python package. `apt-get install
+tesseract-ocr` inside the image is the actual fix; everything else in
+the `Dockerfile` (a non-root user, a health check hitting `/health`, a
+`.dockerignore` that keeps `.env` and other local-only files out of the
+built image the same way `.gitignore` keeps them out of the repo) is
+standard hardening around that one real requirement.
+
+**Honestly reported, not glossed over**: this `Dockerfile` was never
+actually build-tested, because Docker isn't installed on the machine
+this project was built on. It's written against well-established,
+widely-used patterns (this is close to the textbook recipe for bundling
+Tesseract), but "reviewed against known-good patterns" and "verified by
+actually running `docker build`" are different claims, and only the
+first one is true here. This is exactly the same discipline as the
+per-category experiment's 100% result in Part 7 -- state plainly what
+was and wasn't actually confirmed, rather than letting a confident-
+sounding artifact imply more certainty than exists.
+
+### Git and GitHub: the parts of "done" that aren't code
+
+Getting this project into a shareable state surfaced its own small list
+of real issues, all worth knowing how to talk through:
+
+- **Every commit gets scanned for accidental secrets before it's made**,
+  not assumed to be clean because `.env` is gitignored. `.env` being
+  excluded doesn't guarantee a real key never ended up pasted into a
+  comment, a test fixture, or a committed log file by accident --
+  actually diffing what's staged and grepping it for API-key-shaped
+  strings before every push is what actually catches that, and it's a
+  habit, not a one-time check.
+- **`.gitignore` had to be built deliberately**, not just accepted from
+  a template: the assessment brief document, a `.zip` of the whole
+  project, and the day-by-day working-status files all needed to be
+  excluded from the submission repo on request, while the actual
+  fixture data, generated outputs, and evaluation results stayed
+  *included* -- those are evidence the system works, not clutter, and
+  excluding them by reflex would have thrown away the proof this whole
+  document is built on.
+- **A real, easy-to-miss problem**: after pushing work to a `v1` branch
+  across several sessions, a routine check of "what does a reviewer
+  actually see by default" revealed that GitHub's default branch
+  (`main`) was still frozen at the very first commit -- every fix from
+  that point forward existed only on `v1`, invisible to anyone who just
+  opened the repository without knowing to look for another branch.
+  Nothing about the code was wrong; the *delivery* was silently
+  incomplete. This is worth remembering as its own category of bug --
+  the system can be entirely correct and still fail the actual goal
+  (a reviewer seeing the real work) for a reason that has nothing to do
+  with the code at all.
+
+### Verifying against the exact pinned environment, not whatever's already installed
+
+A recurring, almost boring practice, repeated dozens of times across
+this project rather than done once: before trusting that a script
+works, install the *exact* pinned versions from `requirements.txt` into
+a clean, throwaway virtual environment and run it there -- never trust
+whatever happens to already be on the machine's global Python. This
+caught a real, concrete problem early on: the machine's globally
+installed `langchain` packages were several major versions behind (and
+mutually incompatible with each other) compared to what
+`requirements.txt` actually pins, which would have made `agent.py` fail
+to import with a confusing error completely unrelated to anything this
+project's own code does. Testing against the pinned versions in
+isolation (rather than the global environment) is what separated "this
+is genuinely broken" from "my machine's leftover packages from a
+different project are in the way" -- a distinction that matters a lot
+for correctly diagnosing a failure, and one that's easy to get wrong if
+you only ever test in one, already-polluted environment.
+
+### A tooling false alarm, and how to tell it apart from a real bug
+
+PyCharm's static analyzer flagged `main.py`'s `from agent import
+investigate` as an unresolved reference, and separately flagged
+`fastapi`/`uvicorn` as "not listed in the project requirements" --
+neither was a real problem, and telling the difference mattered:
+
+- The unresolved-reference warning exists because `main.py` adds `rca/`
+  to `sys.path` *at runtime*, right before that import -- a pattern a
+  static analyzer, which never actually runs the code, has no way to
+  follow. The import had already been verified working (the server
+  had been started and had answered real authenticated requests through
+  it) before this warning was ever investigated, which is what made it
+  possible to say confidently "this is the tool being wrong, not the
+  code" rather than guessing.
+- The "package not listed" warning turned out to be a stale IDE cache --
+  a direct check of the project's actual virtual environment showed
+  `fastapi` and `uvicorn` genuinely installed at the exact versions
+  `requirements.txt` names, which the IDE's inspection just hadn't
+  noticed yet, since the file had been edited from outside the IDE.
+
+Neither of these needed a code fix. What they needed was the discipline
+to actually check ("is this import verified working? is the package
+actually installed?") before assuming a red squiggly line means
+something is broken -- an IDE inspector is itself just a tool, capable
+of being wrong, and treating its warnings as automatically correct would
+have meant chasing two non-bugs instead of zero.
+
+---
+
 ## Key principles, distilled (for explaining this out loud)
 
 1. **Test everything that can be tested without a model call, first, and
@@ -1074,3 +1265,18 @@ a real evaluation methodology should be able to answer honestly:
    than a perfect score in general**, and saying so explicitly, in
    writing, at the moment of the result, is worth more than letting the
    headline number speak for itself.
+9. **Test against the exact pinned environment, not whatever happens to
+   already be installed.** The one dependency-related bug that actually
+   showed up in this project (Part 10) was caused by stale global
+   packages, not by the project's own code -- and the only reason it was
+   diagnosed correctly instead of chased as a phantom code bug was
+   testing inside a clean environment built from `requirements.txt`
+   itself, not trusting the machine's ambient state.
+10. **Correct code and a completed delivery are not the same claim.**
+    Every fix in this project could be exactly right and a reviewer could
+    still see none of it, simply because the branch holding the fixes
+    wasn't the one GitHub shows by default (Part 10). "Is this correct"
+    and "will the person I'm building this for actually see it" are two
+    different questions, and only checking the first one is a common way
+    for real work to go unrecognized for a reason that has nothing to do
+    with its quality.

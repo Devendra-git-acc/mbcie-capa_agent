@@ -93,6 +93,26 @@ def _update_rca_review_queue(complaint_id: str, result: dict) -> None:
     RCA_REVIEW_QUEUE_PATH.write_text(json.dumps(queue, indent=2))
 
 
+def _update_extraction_review_queue(doc_id: str, result: dict) -> None:
+    """Same incremental-update pattern as _update_rca_review_queue above,
+    for Task 2's extraction/output/review_queue.json. Only wired into
+    POST /extract/sample/{doc_id} (the persisted fixture-corpus path) --
+    POST /extract (real uploads) is deliberately ephemeral/one-off and
+    doesn't write extraction/output/ at all, so it doesn't touch this
+    queue either. Bug fixed here: this endpoint previously wrote the
+    per-document JSON but never updated review_queue.json, so a document
+    flagged needs_review=True via this endpoint silently never appeared
+    in GET /review-queue -- only run_batch() actually populated it,
+    despite that endpoint's own docstring claiming otherwise."""
+    path = pipeline.OUTPUT_DIR / "review_queue.json"
+    queue = json.loads(path.read_text()) if path.exists() else {}
+    if pipeline.needs_review(result):
+        queue[doc_id] = pipeline.review_reasons_for(result)
+    else:
+        queue.pop(doc_id, None)
+    path.write_text(json.dumps(queue, indent=2))
+
+
 class AdHocComplaint(BaseModel):
     """A complaint that doesn't have to already exist in complaints.json --
     for POST /investigate, distinct from POST /investigate/{complaint_id}
@@ -212,6 +232,7 @@ def extract_sample_document(doc_id: str):
         raise HTTPException(status_code=502,
                              detail=f"Extraction failed -- upstream LLM provider error: {type(e).__name__}: {e}")
     (pipeline.OUTPUT_DIR / f"{doc_id}.json").write_text(json.dumps(result, indent=2))
+    _update_extraction_review_queue(doc_id, result)
     return result
 
 
@@ -253,12 +274,15 @@ async def extract_uploaded_document(files: list[UploadFile] = File(...)):
 
 @app.get("/review-queue", dependencies=[Depends(require_auth)])
 def get_review_queue():
-    """Documents flagged for human review from the most recent batch run
-    (extraction/pipeline.py's run_batch(), or accumulated via repeated
-    POST /extract/sample/{doc_id} calls -- both write the same files)."""
+    """Documents flagged for human review -- built either by one batch run
+    (extraction/pipeline.py's run_batch(), overwriting the whole queue) or
+    incrementally by repeated POST /extract/sample/{doc_id} calls (each one
+    adds/removes just that doc_id, via _update_extraction_review_queue()
+    above), same file either way. Real uploads (POST /extract) are
+    deliberately excluded -- see that endpoint's docstring."""
     path = pipeline.OUTPUT_DIR / "review_queue.json"
     if not path.exists():
-        return {"review_queue": {}, "note": "No batch has been run yet."}
+        return {"review_queue": {}, "note": "No document has been extracted yet."}
     return {"review_queue": json.loads(path.read_text())}
 
 

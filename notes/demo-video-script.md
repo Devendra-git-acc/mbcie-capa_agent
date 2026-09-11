@@ -1,180 +1,299 @@
 # Demo video script
 
-Target: **under 5 minutes**, per the brief. Written to be read almost
-verbatim while screen-recording the demo console at `http://127.0.0.1:8000/`
-(after `uvicorn main:app --reload`, with `.env` filled in and the server
-already warm -- don't record the server cold-starting). Times are a
-budget, not a stopwatch -- talk at a natural pace and trim the wrap-up if
-you're running long rather than rushing the middle.
+A full shot-by-shot script for the submission video, under the brief's
+5-minute cap. Every line is written to be read close to verbatim; every
+action is numbered so there's no ambiguity about what's on screen when
+each line is spoken. Total budget below adds to **5:00 exactly** -- treat
+that as tight, not loose, and use the [cutting guide](#if-youre-running-long)
+if a take runs over.
 
-Log into the console once at the start (`reviewer` / your `BASIC_AUTH_PASSWORD`)
-and leave it connected for the whole recording.
+## Before you hit record
+
+1. `uvicorn main:app --reload`, wait for `Application startup complete.`
+   **Don't record the cold start** -- the LLM provider connection and
+   first import already happened by the time recording begins.
+2. Open `http://127.0.0.1:8000/` in a clean browser window/tab. Zoom the
+   page to whatever reads clearly on your recording resolution (Ctrl/Cmd
+   `+` a couple of times if recording at 1080p on a high-DPI screen).
+3. Log in once with `reviewer` / your real `BASIC_AUTH_PASSWORD` -- stay
+   connected for the whole recording, don't log in on camera.
+4. Have a real PDF or a phone photo of any receipt/invoice sitting on the
+   desktop, ready to drag in during the Task 2 upload beat.
+5. Do one silent practice run of the whole path below first. LLM output
+   isn't identical every time -- know roughly what each step returns
+   *this* run before you're narrating it live, so nothing on screen
+   surprises you mid-sentence. If a result differs from what's written
+   below, say what's actually on screen, not the scripted line -- the
+   contingency notes under each beat cover the realistic alternatives.
+6. Close anything else that might pop a notification during recording.
+
+Screen recorder running, browser at the landing page, both tabs visible.
+Begin.
 
 ---
 
 ## 0:00 -- 0:15 -- Intro
 
-**Say:**
-> "This is my submission for the MBCIE AI Engineer assessment -- two
+**On screen:** the demo console landing page, Task 1 tab active, nothing
+clicked yet.
+
+**Say, word for word:**
+> "This is my submission for the MBCIE AI Engineer assessment. It's two
 > systems behind one FastAPI service. Task 1 is a LangGraph agent that
-> investigates manufacturing defect complaints on its own. Task 2 is a
-> document extraction pipeline with cost control. I'll run both live
-> against the real API, not a slide deck."
+> autonomously investigates manufacturing defect complaints. Task 2 is a
+> document extraction pipeline with cost control. Everything I'm about to
+> show is running live against the real API -- this isn't a slide deck or
+> a recording of a mock."
 
-**Show:** the demo console landing page, both tabs visible.
-
----
-
-## 0:15 -- 1:15 -- Task 1, dataset complaint
-
-**Say:**
-> "First, an existing complaint from the synthetic dataset I generated --
-> a tyre plant with complaint logs, machine downtime, and shift records,
-> with root causes deliberately planted in the data."
-
-**Do:**
-1. Task 1 tab, pick **C002** (or any Equipment complaint) from the dropdown.
-2. Click **Run investigation**. While it's running (5-40s):
-
-**Say (while it runs):**
-> "This is a real LangGraph ReAct loop -- the agent decides for itself
-> which tools to call. It might decode the batch code, pull downtime
-> records, check shift staffing, and look for the same defect on other
-> machines, in whatever order it decides it needs."
-
-**Do:** once it finishes, point at:
-- the conclusion + category
-- the **confidence score breakdown** -- explain it's a computed score
-  (verification outcome + category reliability + citation), not the
-  model's self-reported confidence
-- expand one or two steps of the **evidence chain**
-
-**Say:**
-> "The confidence score isn't the model grading itself -- it's built from
-> signals I can actually check: did the citation survive a mechanical
-> verification, how reliable has this category historically been, and
-> did it cite a real record. And every tool call it made is right here,
-> in order."
+**Action:** none yet -- let the page sit still while you say this so the
+opening frame isn't a blur of cursor movement.
 
 ---
 
-## 1:15 -- 2:15 -- Task 1, ad-hoc complaint
+## 0:15 -- 1:05 -- Task 1: an existing complaint from the dataset
 
 **Say:**
-> "It doesn't have to be a complaint that already exists in the dataset --
-> I can type a brand new one."
+> "Task 1 starts with a synthetic factory dataset I generated myself --
+> no real dataset was supplied for this assessment. It's a tyre and cycle
+> plant: a complaint log, machine downtime records, and operator shift
+> data, with root causes deliberately planted in the data rather than
+> random. This one" --
 
-**Do:** in the "type your own complaint" form:
-- Batch code: `M02-2026W13`
-- Defect description: `Customer reports the tyre came apart at the tread after very little use -- looks like it wasn't cured properly.`
-- Click **Investigate this complaint**.
+**Action 1:** click the complaint dropdown, select **C002**.
 
-**Say (while it runs):**
-> "This complaint was never in complaints.json. The agent is investigating
-> it against the real downtime and shift history for that machine and
-> week -- the same records that already exist independent of any specific
-> complaint."
+**Say (continuing):**
+> -- "is a real complaint from that dataset."
 
-**Do:** once done, briefly show the result (should land on Equipment,
-same underlying evidence as C001/C002 -- reinforces it's reasoning over
-retrieved data, not keyword-matching wording).
+**Action 2:** click **Run investigation**.
 
-**Optional, if time allows -- the honest "I don't know" case:**
-- Batch code: `M99-2026W40`
-- Defect description: `Unexplained surface discoloration.`
+**Say, while the request is in flight (this typically takes 5-40 seconds --
+keep talking, don't sit in silence):**
+> "This is a real LangGraph ReAct loop running right now -- the agent is
+> deciding for itself which tools it needs. It might decode the batch
+> code into a machine and date range, pull downtime records for that
+> window, check who was staffing the shift, or look for the same defect
+> on other machines. It's not a fixed pipeline -- the order and the choice
+> of which tools to call is the model's own decision each time."
+
+**Action 3:** once the result lands, point the cursor at, in order:
+- the **root cause category** and hypothesis text
+- the **confidence score** tile row
+- one or two expanded rows of the **evidence chain**
 
 **Say:**
-> "And if I give it a machine that's genuinely not in the data, it
-> doesn't invent an answer -- it says 'Insufficient evidence,' and gets
-> automatically flagged for human review instead."
+> "The confidence score here isn't the model grading its own answer --
+> that's something I deliberately avoided, because a model's self-reported
+> confidence doesn't actually correlate well with whether it's right. This
+> is computed from three things I can independently check: whether the
+> citation survived a mechanical verification step, how reliable this
+> category has historically been, and whether it actually cited a real
+> record. And this evidence chain is exactly what it says -- every tool
+> call the agent made, in order, with the real result it got back."
 
-**Do:** point at the **review queue** panel updating with the new entry.
+**Contingency:** if C002 happens to land on a different category than
+Equipment this run (non-determinism is real and documented, not a bug),
+just say what's on screen -- e.g. "this run it landed on X" -- and move
+on. Don't stop the recording over it.
 
 ---
 
-## 2:15 -- 3:15 -- Task 2, sample document + upload
+## 1:05 -- 1:50 -- Task 1: a complaint that isn't in the dataset at all
 
 **Say:**
-> "Task 2 is document extraction. Ten invoices and purchase orders in
-> genuinely inconsistent formats -- some digital PDFs, some scanned
-> images, different vendors and layouts."
+> "It doesn't have to be a complaint that already exists in the dataset,
+> though. I can type a completely new one."
 
-**Do:**
-1. Switch to the Task 2 tab.
-2. Pick **D05** from the sample documents, click **Extract this document**.
-3. Once done, show the extracted fields, the line-item table, and the
-   **confidence breakdown** -- point out `needs_review: true` with its
-   specific reason (arithmetic doesn't reconcile).
+**Action 1:** click into the "type your own complaint" form.
+
+**Action 2:** type into **Batch code**:
+```
+M02-2026W13
+```
+
+**Action 3:** type into **Defect description**:
+```
+Customer reports the tyre came apart at the tread after very little use -- looks like it wasn't cured properly.
+```
+
+**Action 4:** click **Investigate this complaint**.
+
+**Say, while it runs:**
+> "This exact complaint was never in complaints.json -- I just typed it.
+> What makes this work is that the evidence the agent needs -- the
+> downtime records, the shift records -- already exists independently of
+> any specific complaint. A machine's operating history doesn't wait for
+> someone to file a complaint about it. So the agent is investigating this
+> against the real history for machine M02 that week, the same as it
+> would for any real new complaint in production."
+
+**Action 5:** once it resolves, point at the category and note it's
+reasoning from the same underlying evidence as the dataset complaint on
+the same machine -- proving it's not just keyword-matching the wording.
 
 **Say:**
-> "This one's flagged -- the subtotal, tax, and total don't add up, so
+> "Same machine, same evidence, completely different wording from the
+> fixture complaint -- and it reasons its way to the same conclusion."
+
+---
+
+## 1:50 -- 2:20 -- Task 1: the honest "I don't know" case
+
+**Say:**
+> "And if I give it a machine that genuinely isn't in the data at all --"
+
+**Action 1:** clear the form, type into **Batch code**:
+```
+M99-2026W40
+```
+
+**Action 2:** type into **Defect description**:
+```
+Unexplained surface discoloration.
+```
+
+**Action 3:** click **Investigate this complaint**.
+
+**Say, while it runs:**
+> "-- it doesn't invent a plausible-sounding answer just because I asked
+> it a question."
+
+**Action 4:** once it resolves to "Insufficient evidence," scroll to the
+**review queue** panel and point at the new entry that just appeared.
+
+**Say:**
+> "It honestly says there's insufficient evidence, and that automatically
+> routes it into a persisted human-review queue instead of shipping a
+> guess. That queue updates after every single investigation, and clears
+> an entry again if a later re-run comes back clean."
+
+---
+
+## 2:20 -- 3:10 -- Task 2: extracting a fixture document
+
+**Action 1:** switch to the **Task 2** tab.
+
+**Say:**
+> "Task 2 is document extraction. There are ten invoices and purchase
+> orders here in genuinely inconsistent formats -- some are digital PDFs,
+> some are scanned images, different vendors, different layouts, none
+> templated the same way."
+
+**Action 2:** select **D05** from the sample documents dropdown, click
+**Extract this document**.
+
+**Say, while it runs:**
+> "This runs OCR if the document's scanned, or pulls text directly if
+> it's a digital PDF, then structures it into a validated schema through
+> one LLM call."
+
+**Action 3:** once it resolves, point at:
+- the extracted fields and the line-item table
+- the confidence breakdown, specifically `needs_review: true`
+- the review reason text
+
+**Say:**
+> "This one's flagged. The subtotal, tax, and total don't actually
+> reconcile -- and that's not something I asked the model to judge, it's
+> arithmetic checked in code, the same way I check the agent's evidence in
+> Task 1 mechanically rather than trusting its own self-assessment. So
 > instead of silently accepting a possibly-wrong extraction, it's routed
-> to review with the exact reason why."
-
-**Do:** drag a real PDF (or a photo of a receipt/invoice) into the upload
-panel, click **Extract upload**.
-
-**Say:**
-> "And this isn't limited to the ten fixtures -- I can drop in any real
-> file and it runs the same pipeline live."
+> to review with the specific reason why."
 
 ---
 
-## 3:15 -- 3:45 -- Review queues
-
-**Do:** show both `GET /review-queue` panels (Task 1 and Task 2) with at
-least one real entry each from what you just ran.
+## 3:10 -- 3:35 -- Task 2: uploading a real file
 
 **Say:**
-> "Both tasks route low-confidence results to a persisted review queue
-> instead of guessing -- this updates after every investigation and
-> extraction, and clears again once something's re-run clean."
+> "And this isn't limited to the ten fixtures."
+
+**Action 1:** drag the real PDF or invoice photo you prepared earlier into
+the upload panel.
+
+**Action 2:** click **Extract upload**.
+
+**Say, while it runs:**
+> "I can drop in any real file and it runs the exact same pipeline, live,
+> against something it's never seen before."
+
+**Action 3:** briefly show the result once it lands -- no need to dwell,
+this beat is proving it works on arbitrary input, not re-explaining the
+confidence breakdown again.
 
 ---
 
-## 3:45 -- 4:30 -- Numbers (evaluation + cost)
+## 3:35 -- 3:55 -- Both review queues, side by side
 
-**Say (can be voiceover over the README or terminal, no need to re-run anything live):**
-> "On evaluation: I ran each of the 18 fixture complaints 3 times, not
-> once, because I found during testing that this agent isn't fully
-> deterministic even at temperature zero -- the same complaint produced
-> different categories on two consecutive runs. Across 54 runs, the last
-> full evaluation hit 100%. On a completely held-out set of 18 new
-> synthetic complaints the agent never saw while I was building it, it
-> held 88.9% -- three of four categories at 100%, with one specific,
-> honestly-documented gap in the Material category I wasn't able to fully
-> explain.
+**Action 1:** show the Task 2 review queue panel with D05's entry.
+
+**Action 2:** switch back to Task 1, show its review queue with the
+M99 entry from earlier still there.
+
+**Say:**
+> "Both tasks share the same underlying idea: route anything low-confidence
+> to a persisted queue instead of guessing, rather than it being two
+> unrelated features that happen to look similar."
+
+---
+
+## 3:55 -- 4:40 -- The numbers
+
+This beat doesn't need live interaction -- cut to the terminal, the
+README, or just stay on the console while you say it as voiceover.
+
+**Say:**
+> "On evaluation: I ran each of the eighteen complaints in the dataset
+> three times each, not once, because I found directly during testing
+> that this agent isn't fully deterministic even at temperature zero --
+> the identical complaint produced two different categories across two
+> consecutive runs. Across fifty-four total runs, the last full evaluation
+> came back at 100% accuracy, with zero failed conclusions.
 >
-> For Task 2, measured cost is 36 cents per thousand documents at
-> gpt-4o-mini pricing, and I've got one concrete idea for cutting that
-> further -- stop paying the model to compute line totals, since that's
-> just arithmetic the pipeline can do itself."
+> More importantly, I also built a second, completely held-out dataset --
+> eighteen new synthetic complaints on different machines, generated after
+> the agent's design was already finalized, that it was never tuned
+> against. On that set it held 88.9%. Three of the four categories stayed
+> at 100%; one category, Material, dropped to 50%, with a specific,
+> reproducible pattern I wasn't able to fully explain. I documented that
+> openly rather than leaving it out.
+>
+> For Task 2, measured cost comes out to thirty-six cents per thousand
+> documents at gpt-4o-mini pricing, and I've got one concrete idea for
+> cutting that further: stop paying the model to compute line-item totals,
+> since that's pure arithmetic the pipeline can already compute itself for
+> free."
 
 ---
 
-## 4:30 -- 5:00 -- Close
+## 4:40 -- 5:00 -- Close
 
 **Say:**
-> "Everything here is in the README, including an honest limitations
-> section -- what's genuinely solid, what I'd still fix, and what I'd do
-> differently with more time. Thanks for watching."
+> "All of this -- the architecture decisions and why I made them, the full
+> evaluation methodology, and an honest limitations section covering what
+> I'd still fix and what I'd do differently with more time -- is written
+> up in the README. Thanks for watching."
 
-**Do:** end on the demo console or the README in an editor -- whichever
-reads better on screen.
+**Action:** end on either the demo console or the README open in an
+editor, whichever you cut to.
 
 ---
 
-## If you're cutting for time
+## If you're running long
 
-Drop, in this order, before cutting anything above:
-1. The optional M99 "Insufficient evidence" example (2:15 section)
-2. The Task 2 upload demo -- the sample-document extraction alone still
-   proves the pipeline works
-3. Shorten the numbers section to just the two headline figures (100%
-   tuned / 88.9% held-out; $0.36/1,000 docs) without the surrounding
-   explanation
+Cut in this order -- each one costs the least proof value per second saved:
 
-Never cut: one real Task 1 investigation end-to-end, one real Task 2
-extraction end-to-end, and at least one review-queue flag actually
-appearing on screen -- those three are the parts a reviewer can't verify
-from the README alone.
+1. The M99 "Insufficient evidence" beat (1:50-2:20) -- the ad-hoc complaint
+   beat right before it already proves the "type your own" feature works;
+   this one only adds the honesty angle, which you can still say in one
+   sentence during the close instead.
+2. The Task 2 real-file upload (3:10-3:35) -- the sample-document
+   extraction already proves the pipeline works end-to-end.
+3. Trim the numbers section (3:55-4:40) down to just the four headline
+   figures, no surrounding explanation: *"100% on the tuned set, 88.9% on
+   a genuinely held-out set, thirty-six cents per thousand documents,
+   with one concrete cost-reduction idea."*
+
+**Never cut:** one full Task 1 investigation shown end-to-end (any of the
+three Task 1 beats), one full Task 2 extraction shown end-to-end, and at
+least one review-queue entry actually visible on screen. Those three are
+the things a reviewer cannot verify from the README text alone -- everything
+else in this script is explanation a reviewer could also get by reading.

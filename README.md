@@ -401,6 +401,24 @@ before finalizing a flagged conclusion (via LangGraph's checkpointer/
 `interrupt_before`) rather than flagging after the fact, which I didn't
 have time to build.
 
+**No structured logging or persisted reasoning trace.** Right now,
+diagnosing what happened during a specific past investigation means
+either reading whatever `print()` output was on screen when it ran, or
+re-running it -- and a re-run isn't guaranteed to reproduce the same
+result, given the non-determinism already discussed above.
+`evidence_chain` and `verification_log` are returned in each response,
+but nothing persists them centrally or makes them queryable afterward
+(e.g. "show me every investigation last week that called
+`query_complaints_by_machine` more than twice," or "what did the agent
+actually see before concluding X on this complaint two days ago"). With
+more time I'd replace the `print()` calls with structured logging
+carrying a correlation ID per request, and either wire in LangSmith
+(close to free here, since this is already LangGraph -- one env var) or
+at minimum persist each run's full message history to a queryable store,
+rather than treating the response body as the only record of what
+happened. Covered in more depth, with concrete options, in
+`notes/production-readiness-agentic.md`.
+
 **Docker is unverified.** No Docker was available in the development
 environment, so the `Dockerfile`/`docker-compose.yml` were written
 carefully but never actually run. I'd verify this before calling it a
@@ -418,8 +436,7 @@ version of this project.
 **No production hardening beyond what the brief asked for.** No rate
 limiting, no TLS termination (this app shouldn't hold certs itself
 anyway), no per-user accounts (Basic Auth is one shared credential), no
-centralized tracing/observability beyond what each response returns
-inline, no CI pipeline running the test suite or `eval.py` automatically.
+CI pipeline running the test suite or `eval.py` automatically.
 None of this was in scope for a 3-day prototype, but it's the honest gap
 between "working prototype" and "something I'd put in front of real
 plant data" -- covered in much more depth, with concrete mitigation

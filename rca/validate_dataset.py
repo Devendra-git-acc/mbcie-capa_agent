@@ -9,13 +9,17 @@ be clean, which would corrupt the test regardless of how good the agent
 is?
 """
 import json
+import os
 from pathlib import Path
 
 BASE = Path(__file__).parent
 complaints = json.loads((BASE / "data" / "complaints.json").read_text())
 downtime = json.loads((BASE / "data" / "downtime.json").read_text())
 shifts = json.loads((BASE / "data" / "shifts.json").read_text())
-answer_key = json.loads((BASE / "answer_key.json").read_text())
+# ANSWER_KEY=answer_key_unseen.json validates the held-out generalization set
+# (rca/generate_data_unseen.json) instead of the original tuned-against one --
+# same env-var-switch pattern as eval.py's AGENT_IMPL.
+answer_key = json.loads((BASE / os.environ.get("ANSWER_KEY", "answer_key.json")).read_text())
 
 import re
 from datetime import date, timedelta
@@ -94,13 +98,14 @@ for cid, truth in answer_key.items():
 #    query_complaints tool needs to find).
 material_cids = [cid for cid, t in answer_key.items() if t["root_cause_category"] == "Material"]
 material_dates = [by_complaint[cid]["date_reported"] for cid in material_cids]
+expected_material_machines = {decode(by_complaint[cid]["batch_code"])[0] for cid in material_cids}
 w_start, w_end = min(material_dates), max(material_dates)
 cross_machines = set()
 for c in complaints:
     if w_start <= c["date_reported"] <= w_end:
         cross_machines.add(decode(c["batch_code"])[0])
-if not {"M01", "M03"}.issubset(cross_machines):
-    issues.append(f"Material storyline: M01+M03 not both visible in one date-range query "
+if not expected_material_machines.issubset(cross_machines):
+    issues.append(f"Material storyline: {expected_material_machines} not all visible in one date-range query "
                    f"({w_start}..{w_end}) -- found machines {cross_machines}")
 
 # 6. Storyline-1 specific: the fix event must chronologically post-date

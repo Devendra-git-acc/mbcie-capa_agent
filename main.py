@@ -15,10 +15,14 @@ import secrets
 import shutil
 import sys
 import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
 REPO_ROOT = Path(__file__).parent
 
@@ -55,6 +59,79 @@ if not _effective_password:
 _complaints = json.loads((REPO_ROOT / "rca" / "data" / "complaints.json").read_text())
 _complaint_ids = [c["complaint_id"] for c in _complaints]
 
+# Task 1's mirror of extraction/output/review_queue.json. Task 2 builds its
+# queue once per batch run (run_batch() over all 10 fixtures at once); Task 1
+# has no batch runner -- investigations happen one complaint at a time via
+# this API -- so the queue is instead built incrementally, updated after
+# every POST /investigate/{complaint_id} call rather than written in one
+# shot. A complaint that needed review on one run and gets re-investigated
+# with a clean result is removed from the queue -- the queue reflects the
+# most recent investigation of each complaint, not a history of every flag
+# ever raised.
+RCA_OUTPUT_DIR = REPO_ROOT / "rca" / "output"
+RCA_OUTPUT_DIR.mkdir(exist_ok=True)
+RCA_REVIEW_QUEUE_PATH = RCA_OUTPUT_DIR / "review_queue.json"
+
+
+def _load_rca_review_queue() -> dict:
+    if not RCA_REVIEW_QUEUE_PATH.exists():
+        return {}
+    return json.loads(RCA_REVIEW_QUEUE_PATH.read_text())
+
+
+def _update_rca_review_queue(complaint_id: str, result: dict) -> None:
+    queue = _load_rca_review_queue()
+    if result.get("needs_human_review"):
+        queue[complaint_id] = {
+            "root_cause_category": result["conclusion"].get("root_cause_category"),
+            "confidence_score": result.get("confidence_score"),
+            "review_reasons": result.get("review_reasons"),
+            "investigated_at": datetime.now(timezone.utc).isoformat(),
+        }
+    else:
+        queue.pop(complaint_id, None)
+    RCA_REVIEW_QUEUE_PATH.write_text(json.dumps(queue, indent=2))
+
+
+def _update_extraction_review_queue(doc_id: str, result: dict) -> None:
+    """Same incremental-update pattern as _update_rca_review_queue above,
+    for Task 2's extraction/output/review_queue.json. Only wired into
+    POST /extract/sample/{doc_id} (the persisted fixture-corpus path) --
+    POST /extract (real uploads) is deliberately ephemeral/one-off and
+    doesn't write extraction/output/ at all, so it doesn't touch this
+    queue either. Bug fixed here: this endpoint previously wrote the
+    per-document JSON but never updated review_queue.json, so a document
+    flagged needs_review=True via this endpoint silently never appeared
+    in GET /review-queue -- only run_batch() actually populated it,
+    despite that endpoint's own docstring claiming otherwise."""
+    path = pipeline.OUTPUT_DIR / "review_queue.json"
+    queue = json.loads(path.read_text()) if path.exists() else {}
+    if pipeline.needs_review(result):
+        queue[doc_id] = pipeline.review_reasons_for(result)
+    else:
+        queue.pop(doc_id, None)
+    path.write_text(json.dumps(queue, indent=2))
+
+
+class AdHocComplaint(BaseModel):
+    """A complaint that doesn't have to already exist in complaints.json --
+    for POST /investigate, distinct from POST /investigate/{complaint_id}
+    which only accepts a known fixture ID. batch_code must still decode to
+    a real machine/week (see tools.py's BATCH_RE, format 'M02-2026W13') for
+    the investigation to find anything -- an unrecognized machine or week
+    isn't an error, it just means query_downtime/query_shifts legitimately
+    return nothing and the agent should honestly conclude "Insufficient
+    evidence", the same as it would for a real complaint about an
+    untracked machine."""
+    batch_code: str = Field(..., description="e.g. 'M02-2026W13' -- must match ^M\\d{2}-\\d{4}W\\d{2}$")
+    defect_description: str = Field(..., min_length=1)
+    complaint_id: str | None = Field(None, description="Optional -- auto-generated (ADHOC-xxxxxxxx) if omitted")
+    date_reported: str | None = None
+    product_line: str | None = None
+    customer_or_dealer: str | None = None
+    severity: str | None = None
+
+
 app = FastAPI(title="MBCIE CAPA RCA Agent", version="0.1.0")
 _security = HTTPBasic()
 
@@ -79,13 +156,36 @@ def list_complaints():
     return {"complaint_ids": _complaint_ids}
 
 
+@app.post("/investigate", dependencies=[Depends(require_auth)])
+def run_adhoc_investigation(payload: AdHocComplaint):
+    """Investigate a complaint typed in directly, instead of picking one of
+    the 36 fixture complaints from GET /complaints -- same agent, same
+    verification, same confidence scoring, no restriction to what's
+    already in complaints.json."""
+    complaint = {k: v for k, v in payload.model_dump().items() if v is not None}
+    try:
+        result = investigate(complaint)
+    except ValueError as e:
+        # Bad input (missing/unparseable batch_code) -- caught before the
+        # graph ever runs, so this is a 400, not a 502.
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=502,
+                             detail=f"Investigation failed -- upstream LLM provider error: "
+                                    f"{type(e).__name__}: {e}")
+    _update_rca_review_queue(result["complaint_id"], result)
+    return result
+
+
 @app.post("/investigate/{complaint_id}", dependencies=[Depends(require_auth)])
 def run_investigation(complaint_id: str):
     if complaint_id not in _complaint_ids:
         raise HTTPException(status_code=404, detail=f"Unknown complaint_id: {complaint_id!r}. "
                                                       f"See GET /complaints for valid IDs.")
     try:
-        return investigate(complaint_id)
+        result = investigate(complaint_id)
+        _update_rca_review_queue(complaint_id, result)
+        return result
     except Exception as e:
         # An upstream LLM-provider failure (rate limit, bad/missing API key,
         # network error, timeout) must not leak a raw 500 + stack trace to
@@ -94,6 +194,18 @@ def run_investigation(complaint_id: str):
         raise HTTPException(status_code=502,
                              detail=f"Investigation failed -- upstream LLM provider error: "
                                     f"{type(e).__name__}: {e}")
+
+
+@app.get("/investigate/review-queue", dependencies=[Depends(require_auth)])
+def get_rca_review_queue():
+    """Complaints whose most recent investigation was flagged by the
+    deterministic review gate (rca/agent.py's _human_review_reasons()) --
+    conclusion_failed, unresolved material_verification_failed, low
+    composite confidence_score, or genuine "Insufficient evidence". Built
+    incrementally from POST /investigate/{complaint_id} calls -- see
+    _update_rca_review_queue() above. Task 1's equivalent of Task 2's
+    GET /review-queue."""
+    return {"review_queue": _load_rca_review_queue()}
 
 
 @app.get("/documents", dependencies=[Depends(require_auth)])
@@ -120,6 +232,7 @@ def extract_sample_document(doc_id: str):
         raise HTTPException(status_code=502,
                              detail=f"Extraction failed -- upstream LLM provider error: {type(e).__name__}: {e}")
     (pipeline.OUTPUT_DIR / f"{doc_id}.json").write_text(json.dumps(result, indent=2))
+    _update_extraction_review_queue(doc_id, result)
     return result
 
 
@@ -161,13 +274,30 @@ async def extract_uploaded_document(files: list[UploadFile] = File(...)):
 
 @app.get("/review-queue", dependencies=[Depends(require_auth)])
 def get_review_queue():
-    """Documents flagged for human review from the most recent batch run
-    (extraction/pipeline.py's run_batch(), or accumulated via repeated
-    POST /extract/sample/{doc_id} calls -- both write the same files)."""
+    """Documents flagged for human review -- built either by one batch run
+    (extraction/pipeline.py's run_batch(), overwriting the whole queue) or
+    incrementally by repeated POST /extract/sample/{doc_id} calls (each one
+    adds/removes just that doc_id, via _update_extraction_review_queue()
+    above), same file either way. Real uploads (POST /extract) are
+    deliberately excluded -- see that endpoint's docstring."""
     path = pipeline.OUTPUT_DIR / "review_queue.json"
     if not path.exists():
-        return {"review_queue": {}, "note": "No batch has been run yet."}
+        return {"review_queue": {}, "note": "No document has been extracted yet."}
     return {"review_queue": json.loads(path.read_text())}
+
+
+# Demo console -- a single static page covering both tasks (complaint
+# picker + investigation results + Task 1 review queue; sample-doc picker +
+# real file upload + extraction results + Task 2 review queue), talking
+# directly to the endpoints above with Basic Auth entered in the page
+# itself. Mounted under /ui rather than "/" so it can never shadow an API
+# route; "/" redirects there for convenience.
+app.mount("/ui", StaticFiles(directory=str(REPO_ROOT / "static"), html=True), name="ui")
+
+
+@app.get("/", include_in_schema=False)
+def root():
+    return RedirectResponse(url="/ui/")
 
 
 if __name__ == "__main__":

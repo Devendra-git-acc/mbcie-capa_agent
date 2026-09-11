@@ -2,19 +2,19 @@
   "n_runs_per_complaint": 3,
   "total_complaints": 18,
   "total_investigations": 54,
-  "overall_hit_rate": 1.0,
+  "overall_hit_rate": 0.889,
   "conclusion_failed_rate": 0.0,
   "material_verification_failed_rate": 0.0,
-  "total_verification_retries_used": 36,
+  "total_verification_retries_used": 45,
   "evidence_surfaced_rate": 1.0,
   "per_category_hit_rate": {
     "Equipment": 1.0,
     "Human": 1.0,
-    "Material": 1.0,
+    "Material": 0.5,
     "Insufficient evidence": 1.0
   },
   "per_complaint": {
-    "C001": {
+    "C019": {
       "truth_category": "Equipment",
       "hit_rate": 1.0,
       "conclusion_failed_count": 0,
@@ -23,101 +23,64 @@
           "run": 1,
           "conclusion_failed": false,
           "material_verification_failed": false,
-          "verification_retries_used": 0,
-          "predicted_category": "Equipment",
-          "category_match": true,
-          "evidence_surfaced": true,
-          "steps_used": 9
-        },
-        {
-          "run": 2,
-          "conclusion_failed": false,
-          "material_verification_failed": false,
-          "verification_retries_used": 0,
-          "predicted_category": "Equipment",
-          "category_match": true,
-          "evidence_surfaced": true,
-          "steps_used": 9
-        },
-        {
-          "run": 3,
-          "conclusion_failed": false,
-          "material_verification_failed": false,
-          "verification_retries_used": 0,
-          "predicted_category": "Equipment",
-          "category_match": true,
-          "evidence_surfaced": true,
-          "steps_used": 9
-        }
-      ]
-    },
-    "C002": {
-      "truth_category": "Equipment",
-      "hit_rate": 1.0,
-      "conclusion_failed_count": 0,
-      "runs": [
-        {
-          "run": 1,
-          "conclusion_failed": false,
-          "material_verification_failed": false,
-          "verification_retries_used": 0,
-          "predicted_category": "Equipment",
-          "category_match": true,
-          "evidence_surfaced": true,
-          "steps_used": 9
-        },
-        {
-          "run": 2,
-          "conclusion_failed": false,
-          "material_verification_failed": false,
-          "verification_retries_used": 0,
+          "verification_retries_used": 1,
           "predicted_category": "Equipment",
           "category_match": true,
           "evidence_surfaced": true,
           "steps_used": 10
         },
         {
-          "run": 3,
+          "run": 2,
           "conclusion_failed": false,
           "material_verification_failed": false,
-          "verification_retries_used": 0,
+          "verification_retries_used": 1,
           "predicted_category": "Equipment",
           "category_match": true,
           "evidence_surfaced": true,
           "steps_used": 11
-        }
-      ]
-    },
-    "C003": {
-      "truth_category": "Equipment",
-      "hit_rate": 1.0,
-      "conclusion_failed_count": 0,
-      "runs": [
-        {
-          "run": 1,
-          "conclusion_failed": false,
-          "material_verification_failed": false,
-          "verification_retries_used": 1,
-          "predicted_category": "Equipment",
-          "category_match": true,
-          "evidence_surfaced": true,
-          "steps_used": 14
-        },
-        {
-          "run": 2,
-          "conclusion_failed": false,
-          "material_verification_failed": false,
-          "verification_retries_used": 1,
-          "predicted_category": "Equipment",
-          "category_match": true,
-          "evidence_surfaced": true,
-          "steps_used": 14
         },
         {
           "run": 3,
           "conclusion_failed": false,
           "material_verification_failed": false,
-          "verification_retries_used": 0,
+          "verification_retries_used": 1,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": true,
+          "steps_used": 10
+        }
+      ]
+    },
+    "C020": {
+      "truth_category": "Equipment",
+      "hit_rate": 1.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "material_verification_failed": false,
+          "verification_retries_used": 1,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": true,
+          "steps_used": 12
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "material_verification_failed": false,
+          "verification_retries_used": 1,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": true,
+          "steps_used": 12
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "material_verification_failed": false,
+          "verification_retries_used": 1,
           "predicted_category": "Equipment",
           "category_match": true,
           "evidence_surfaced": true,
@@ -125,7 +88,7 @@
         }
       ]
     },
-    "C004": {
+    "C021": {
       "truth_category": "Equipment",
       "hit_rate": 1.0,
       "conclusion_failed_count": 0,
@@ -148,7 +111,7 @@
           "predicted_category": "Equipment",
           "category_match": true,
           "evidence_surfaced": true,
-          "steps_used": 12
+          "steps_used": 14
         },
         {
           "run": 3,
@@ -162,7 +125,44 @@
         }
       ]
     },
-    "C005": {
+    "C022": {
+      "truth_category": "Equipment",
+      "hit_rate": 1.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "material_verification_failed": false,
+          "verification_retries_used": 0,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": true,
+          "steps_used": 14
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "material_verification_failed": false,
+          "verification_retries_used": 0,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": true,
+          "steps_used": 13
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "material_verification_failed": false,
+          "verification_retries_used": 0,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": true,
+          "steps_used": 13
+        }
+      ]
+    },
+    "C023": {
       "truth_category": "Human",
       "hit_rate": 1.0,
       "conclusion_failed_count": 0,
@@ -181,11 +181,11 @@
           "run": 2,
           "conclusion_failed": false,
           "material_verification_failed": false,
-          "verification_retries_used": 2,
+          "verification_retries_used": 1,
           "predicted_category": "Human",
           "category_match": true,
           "evidence_surfaced": true,
-          "steps_used": 14
+          "steps_used": 13
         },
         {
           "run": 3,
@@ -195,11 +195,11 @@
           "predicted_category": "Human",
           "category_match": true,
           "evidence_surfaced": true,
-          "steps_used": 14
+          "steps_used": 13
         }
       ]
     },
-    "C006": {
+    "C024": {
       "truth_category": "Human",
       "hit_rate": 1.0,
       "conclusion_failed_count": 0,
@@ -212,31 +212,31 @@
           "predicted_category": "Human",
           "category_match": true,
           "evidence_surfaced": true,
-          "steps_used": 14
+          "steps_used": 11
         },
         {
           "run": 2,
           "conclusion_failed": false,
           "material_verification_failed": false,
-          "verification_retries_used": 1,
+          "verification_retries_used": 2,
           "predicted_category": "Human",
           "category_match": true,
           "evidence_surfaced": true,
-          "steps_used": 14
+          "steps_used": 11
         },
         {
           "run": 3,
           "conclusion_failed": false,
           "material_verification_failed": false,
-          "verification_retries_used": 1,
+          "verification_retries_used": 2,
           "predicted_category": "Human",
           "category_match": true,
           "evidence_surfaced": true,
-          "steps_used": 14
+          "steps_used": 11
         }
       ]
     },
-    "C007": {
+    "C025": {
       "truth_category": "Human",
       "hit_rate": 1.0,
       "conclusion_failed_count": 0,
@@ -245,35 +245,146 @@
           "run": 1,
           "conclusion_failed": false,
           "material_verification_failed": false,
-          "verification_retries_used": 2,
+          "verification_retries_used": 1,
           "predicted_category": "Human",
           "category_match": true,
           "evidence_surfaced": true,
-          "steps_used": 14
+          "steps_used": 12
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "material_verification_failed": false,
+          "verification_retries_used": 1,
+          "predicted_category": "Human",
+          "category_match": true,
+          "evidence_surfaced": true,
+          "steps_used": 12
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "material_verification_failed": false,
+          "verification_retries_used": 1,
+          "predicted_category": "Human",
+          "category_match": true,
+          "evidence_surfaced": true,
+          "steps_used": 12
+        }
+      ]
+    },
+    "C026": {
+      "truth_category": "Material",
+      "hit_rate": 0.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "material_verification_failed": false,
+          "verification_retries_used": 1,
+          "predicted_category": "Insufficient evidence",
+          "category_match": false,
+          "evidence_surfaced": null,
+          "steps_used": 10
         },
         {
           "run": 2,
           "conclusion_failed": false,
           "material_verification_failed": false,
           "verification_retries_used": 2,
-          "predicted_category": "Human",
-          "category_match": true,
-          "evidence_surfaced": true,
-          "steps_used": 14
+          "predicted_category": "Insufficient evidence",
+          "category_match": false,
+          "evidence_surfaced": null,
+          "steps_used": 10
         },
         {
           "run": 3,
           "conclusion_failed": false,
           "material_verification_failed": false,
           "verification_retries_used": 2,
-          "predicted_category": "Human",
-          "category_match": true,
-          "evidence_surfaced": true,
-          "steps_used": 14
+          "predicted_category": "Insufficient evidence",
+          "category_match": false,
+          "evidence_surfaced": null,
+          "steps_used": 10
         }
       ]
     },
-    "C008": {
+    "C027": {
+      "truth_category": "Material",
+      "hit_rate": 0.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "material_verification_failed": false,
+          "verification_retries_used": 2,
+          "predicted_category": "Insufficient evidence",
+          "category_match": false,
+          "evidence_surfaced": null,
+          "steps_used": 10
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "material_verification_failed": false,
+          "verification_retries_used": 2,
+          "predicted_category": "Insufficient evidence",
+          "category_match": false,
+          "evidence_surfaced": null,
+          "steps_used": 10
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "material_verification_failed": false,
+          "verification_retries_used": 2,
+          "predicted_category": "Insufficient evidence",
+          "category_match": false,
+          "evidence_surfaced": null,
+          "steps_used": 10
+        }
+      ]
+    },
+    "C028": {
+      "truth_category": "Material",
+      "hit_rate": 1.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "material_verification_failed": false,
+          "verification_retries_used": 1,
+          "predicted_category": "Material",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 10
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "material_verification_failed": false,
+          "verification_retries_used": 1,
+          "predicted_category": "Material",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 12
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "material_verification_failed": false,
+          "verification_retries_used": 1,
+          "predicted_category": "Material",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 10
+        }
+      ]
+    },
+    "C029": {
       "truth_category": "Material",
       "hit_rate": 1.0,
       "conclusion_failed_count": 0,
@@ -310,118 +421,7 @@
         }
       ]
     },
-    "C009": {
-      "truth_category": "Material",
-      "hit_rate": 1.0,
-      "conclusion_failed_count": 0,
-      "runs": [
-        {
-          "run": 1,
-          "conclusion_failed": false,
-          "material_verification_failed": false,
-          "verification_retries_used": 1,
-          "predicted_category": "Material",
-          "category_match": true,
-          "evidence_surfaced": null,
-          "steps_used": 10
-        },
-        {
-          "run": 2,
-          "conclusion_failed": false,
-          "material_verification_failed": false,
-          "verification_retries_used": 1,
-          "predicted_category": "Material",
-          "category_match": true,
-          "evidence_surfaced": null,
-          "steps_used": 10
-        },
-        {
-          "run": 3,
-          "conclusion_failed": false,
-          "material_verification_failed": false,
-          "verification_retries_used": 1,
-          "predicted_category": "Material",
-          "category_match": true,
-          "evidence_surfaced": null,
-          "steps_used": 10
-        }
-      ]
-    },
-    "C010": {
-      "truth_category": "Material",
-      "hit_rate": 1.0,
-      "conclusion_failed_count": 0,
-      "runs": [
-        {
-          "run": 1,
-          "conclusion_failed": false,
-          "material_verification_failed": false,
-          "verification_retries_used": 1,
-          "predicted_category": "Material",
-          "category_match": true,
-          "evidence_surfaced": null,
-          "steps_used": 10
-        },
-        {
-          "run": 2,
-          "conclusion_failed": false,
-          "material_verification_failed": false,
-          "verification_retries_used": 1,
-          "predicted_category": "Material",
-          "category_match": true,
-          "evidence_surfaced": null,
-          "steps_used": 10
-        },
-        {
-          "run": 3,
-          "conclusion_failed": false,
-          "material_verification_failed": false,
-          "verification_retries_used": 1,
-          "predicted_category": "Material",
-          "category_match": true,
-          "evidence_surfaced": null,
-          "steps_used": 10
-        }
-      ]
-    },
-    "C011": {
-      "truth_category": "Material",
-      "hit_rate": 1.0,
-      "conclusion_failed_count": 0,
-      "runs": [
-        {
-          "run": 1,
-          "conclusion_failed": false,
-          "material_verification_failed": false,
-          "verification_retries_used": 1,
-          "predicted_category": "Material",
-          "category_match": true,
-          "evidence_surfaced": null,
-          "steps_used": 10
-        },
-        {
-          "run": 2,
-          "conclusion_failed": false,
-          "material_verification_failed": false,
-          "verification_retries_used": 1,
-          "predicted_category": "Material",
-          "category_match": true,
-          "evidence_surfaced": null,
-          "steps_used": 10
-        },
-        {
-          "run": 3,
-          "conclusion_failed": false,
-          "material_verification_failed": false,
-          "verification_retries_used": 1,
-          "predicted_category": "Material",
-          "category_match": true,
-          "evidence_surfaced": null,
-          "steps_used": 10
-        }
-      ]
-    },
-    "C012": {
+    "C030": {
       "truth_category": "Equipment",
       "hit_rate": 1.0,
       "conclusion_failed_count": 0,
@@ -434,7 +434,7 @@
           "predicted_category": "Equipment",
           "category_match": true,
           "evidence_surfaced": null,
-          "steps_used": 14
+          "steps_used": 11
         },
         {
           "run": 2,
@@ -444,44 +444,7 @@
           "predicted_category": "Equipment",
           "category_match": true,
           "evidence_surfaced": null,
-          "steps_used": 14
-        },
-        {
-          "run": 3,
-          "conclusion_failed": false,
-          "material_verification_failed": false,
-          "verification_retries_used": 0,
-          "predicted_category": "Equipment",
-          "category_match": true,
-          "evidence_surfaced": null,
-          "steps_used": 14
-        }
-      ]
-    },
-    "C013": {
-      "truth_category": "Equipment",
-      "hit_rate": 1.0,
-      "conclusion_failed_count": 0,
-      "runs": [
-        {
-          "run": 1,
-          "conclusion_failed": false,
-          "material_verification_failed": false,
-          "verification_retries_used": 0,
-          "predicted_category": "Equipment",
-          "category_match": true,
-          "evidence_surfaced": null,
-          "steps_used": 14
-        },
-        {
-          "run": 2,
-          "conclusion_failed": false,
-          "material_verification_failed": false,
-          "verification_retries_used": 0,
-          "predicted_category": "Equipment",
-          "category_match": true,
-          "evidence_surfaced": null,
-          "steps_used": 14
+          "steps_used": 11
         },
         {
           "run": 3,
@@ -495,7 +458,44 @@
         }
       ]
     },
-    "C014": {
+    "C031": {
+      "truth_category": "Equipment",
+      "hit_rate": 1.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "material_verification_failed": false,
+          "verification_retries_used": 0,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 14
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "material_verification_failed": false,
+          "verification_retries_used": 0,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 12
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "material_verification_failed": false,
+          "verification_retries_used": 0,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 12
+        }
+      ]
+    },
+    "C032": {
       "truth_category": "Equipment",
       "hit_rate": 1.0,
       "conclusion_failed_count": 0,
@@ -532,44 +532,7 @@
         }
       ]
     },
-    "C015": {
-      "truth_category": "Equipment",
-      "hit_rate": 1.0,
-      "conclusion_failed_count": 0,
-      "runs": [
-        {
-          "run": 1,
-          "conclusion_failed": false,
-          "material_verification_failed": false,
-          "verification_retries_used": 0,
-          "predicted_category": "Equipment",
-          "category_match": true,
-          "evidence_surfaced": null,
-          "steps_used": 10
-        },
-        {
-          "run": 2,
-          "conclusion_failed": false,
-          "material_verification_failed": false,
-          "verification_retries_used": 0,
-          "predicted_category": "Equipment",
-          "category_match": true,
-          "evidence_surfaced": null,
-          "steps_used": 10
-        },
-        {
-          "run": 3,
-          "conclusion_failed": false,
-          "material_verification_failed": false,
-          "verification_retries_used": 0,
-          "predicted_category": "Equipment",
-          "category_match": true,
-          "evidence_surfaced": null,
-          "steps_used": 10
-        }
-      ]
-    },
-    "C016": {
+    "C033": {
       "truth_category": "Equipment",
       "hit_rate": 1.0,
       "conclusion_failed_count": 0,
@@ -606,7 +569,44 @@
         }
       ]
     },
-    "C017": {
+    "C034": {
+      "truth_category": "Equipment",
+      "hit_rate": 1.0,
+      "conclusion_failed_count": 0,
+      "runs": [
+        {
+          "run": 1,
+          "conclusion_failed": false,
+          "material_verification_failed": false,
+          "verification_retries_used": 0,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 14
+        },
+        {
+          "run": 2,
+          "conclusion_failed": false,
+          "material_verification_failed": false,
+          "verification_retries_used": 0,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 14
+        },
+        {
+          "run": 3,
+          "conclusion_failed": false,
+          "material_verification_failed": false,
+          "verification_retries_used": 0,
+          "predicted_category": "Equipment",
+          "category_match": true,
+          "evidence_surfaced": null,
+          "steps_used": 14
+        }
+      ]
+    },
+    "C035": {
       "truth_category": "Insufficient evidence",
       "hit_rate": 1.0,
       "conclusion_failed_count": 0,
@@ -629,7 +629,7 @@
           "predicted_category": "Insufficient evidence",
           "category_match": true,
           "evidence_surfaced": null,
-          "steps_used": 13
+          "steps_used": 11
         },
         {
           "run": 3,
@@ -643,7 +643,7 @@
         }
       ]
     },
-    "C018": {
+    "C036": {
       "truth_category": "Insufficient evidence",
       "hit_rate": 1.0,
       "conclusion_failed_count": 0,
@@ -652,21 +652,21 @@
           "run": 1,
           "conclusion_failed": false,
           "material_verification_failed": false,
-          "verification_retries_used": 1,
+          "verification_retries_used": 2,
           "predicted_category": "Insufficient evidence",
           "category_match": true,
           "evidence_surfaced": null,
-          "steps_used": 11
+          "steps_used": 12
         },
         {
           "run": 2,
           "conclusion_failed": false,
           "material_verification_failed": false,
-          "verification_retries_used": 1,
+          "verification_retries_used": 2,
           "predicted_category": "Insufficient evidence",
           "category_match": true,
           "evidence_surfaced": null,
-          "steps_used": 11
+          "steps_used": 12
         },
         {
           "run": 3,
@@ -676,7 +676,7 @@
           "predicted_category": "Insufficient evidence",
           "category_match": true,
           "evidence_surfaced": null,
-          "steps_used": 11
+          "steps_used": 13
         }
       ]
     }

@@ -29,21 +29,32 @@ Two metrics per run, not one:
     those.
 
 Run with:
-    cd rca && python eval.py        # 3 runs/complaint (default)
+    cd rca && python eval.py        # 3 runs/complaint (default), agent.py
     cd rca && python eval.py 5      # 5 runs/complaint
+    AGENT_IMPL=agent_per_category python eval.py   # test the per-category
+                                                    # investigator experiment
+                                                    # instead (see agent_per_category.py)
+    ANSWER_KEY=answer_key_unseen.json python eval.py   # evaluate against the
+                                                        # held-out generalization
+                                                        # set instead of the
+                                                        # tuned-against one (see
+                                                        # generate_data_unseen.py)
 """
+import importlib
 import json
+import os
 import sys
 from pathlib import Path
 
-from agent import investigate
+investigate = importlib.import_module(os.environ.get("AGENT_IMPL", "agent")).investigate
 
 DEFAULT_RUNS = 3
 BASE = Path(__file__).parent
+ANSWER_KEY_FILE = os.environ.get("ANSWER_KEY", "answer_key.json")
 
 
 def load_answer_key() -> dict:
-    return json.loads((BASE / "answer_key.json").read_text())
+    return json.loads((BASE / ANSWER_KEY_FILE).read_text())
 
 
 def evidence_was_surfaced(evidence_chain: list[dict], truth: dict) -> bool | None:
@@ -60,14 +71,23 @@ def evaluate_complaint(complaint_id: str, truth: dict, n_runs: int) -> list[dict
         result = investigate(complaint_id)
         conclusion = result["conclusion"]
         failed = result.get("conclusion_failed", False)
+        verification_failed = result.get("material_verification_failed", False)
         category = conclusion.get("root_cause_category")
-        match = (not failed) and bool(category) and category.lower() == truth["root_cause_category"].lower()
+        # Same discipline as conclusion_failed: a Material conclusion that never
+        # passed the mechanical citation check (i.e. survived MAX_VERIFICATION_RETRIES
+        # corrections and STILL doesn't hold up) must never count as a hit, even if
+        # the category string happens to equal ground truth.
+        match = ((not failed) and (not verification_failed) and bool(category)
+                  and category.lower() == truth["root_cause_category"].lower())
         runs.append({
             "run": i + 1,
             "conclusion_failed": failed,
+            "material_verification_failed": verification_failed,
+            "verification_retries_used": len(result.get("verification_log", [])),
             "predicted_category": category,
             "category_match": match,
             "evidence_surfaced": evidence_was_surfaced(result["evidence_chain"], truth),
+            "needs_human_review": result.get("needs_human_review", False),
             "steps_used": result.get("steps_used"),
         })
     return runs
@@ -83,6 +103,9 @@ def main():
     total_runs = 0
     total_matches = 0
     total_failed = 0
+    total_verification_failed = 0
+    total_verification_retries = 0
+    total_needs_review = 0
     evidence_checks = []
 
     for cid, truth in answer_key.items():
@@ -102,8 +125,15 @@ def main():
         total_runs += n_runs
         total_matches += matches
         total_failed += failed
+        total_verification_failed += sum(1 for r in runs if r["material_verification_failed"])
+        total_verification_retries += sum(r["verification_retries_used"] for r in runs)
+        total_needs_review += sum(1 for r in runs if r["needs_human_review"])
         evidence_checks += [r["evidence_surfaced"] for r in runs if r["evidence_surfaced"] is not None]
-        print(f"  {cid}: {matches}/{n_runs} correct, {failed}/{n_runs} conclusion_failed")
+        vf = sum(1 for r in runs if r["material_verification_failed"])
+        vr = sum(r["verification_retries_used"] for r in runs)
+        extra = f", {vr} verification retr{'y' if vr == 1 else 'ies'}" if vr else ""
+        print(f"  {cid}: {matches}/{n_runs} correct, {failed}/{n_runs} conclusion_failed{extra}"
+              + (f", {vf}/{n_runs} still-invalid Material after retries" if vf else ""))
 
     summary = {
         "n_runs_per_complaint": n_runs,
@@ -111,24 +141,39 @@ def main():
         "total_investigations": total_runs,
         "overall_hit_rate": round(total_matches / total_runs, 3),
         "conclusion_failed_rate": round(total_failed / total_runs, 3),
+        "material_verification_failed_rate": round(total_verification_failed / total_runs, 3),
+        "total_verification_retries_used": total_verification_retries,
+        "human_review_rate": round(total_needs_review / total_runs, 3),
         "evidence_surfaced_rate": round(sum(evidence_checks) / len(evidence_checks), 3) if evidence_checks else None,
         "per_category_hit_rate": {cat: round(per_category_matches[cat] / per_category_totals[cat], 3)
                                    for cat in per_category_totals},
         "per_complaint": per_complaint,
     }
-    (BASE / "eval_results.json").write_text(json.dumps(summary, indent=2))
+    # Different answer key -> different output file, so evaluating the
+    # held-out set never clobbers the historical eval_results.json that
+    # the journal and status docs reference by name.
+    if ANSWER_KEY_FILE == "answer_key.json":
+        output_name = "eval_results.json"
+    else:
+        output_name = f"eval_results_{ANSWER_KEY_FILE.replace('answer_key_', '').replace('.json', '')}.json"
+    (BASE / output_name).write_text(json.dumps(summary, indent=2))
 
     print("\n" + "=" * 70)
     print(f"Overall hit rate: {summary['overall_hit_rate']:.1%}  "
           f"({total_matches}/{total_runs} investigations)")
     print(f"conclusion_failed rate: {summary['conclusion_failed_rate']:.1%}")
+    print(f"material_verification_failed rate: {summary['material_verification_failed_rate']:.1%}  "
+          f"({summary['total_verification_retries_used']} correction attempts made in total)")
     if summary["evidence_surfaced_rate"] is not None:
         print(f"Evidence surfaced rate (storylines with concrete record IDs): "
               f"{summary['evidence_surfaced_rate']:.1%}")
+    print(f"Human review rate: {summary['human_review_rate']:.1%}  "
+          f"(flagged by the deterministic review gate -- conclusion_failed, verification failed, "
+          f"Material category, or genuine Insufficient evidence)")
     print("Per-category hit rate:")
     for cat, rate in summary["per_category_hit_rate"].items():
         print(f"  {cat}: {rate:.1%}")
-    print(f"\nFull results written to {BASE / 'eval_results.json'}")
+    print(f"\nFull results written to {BASE / output_name}")
 
 
 if __name__ == "__main__":

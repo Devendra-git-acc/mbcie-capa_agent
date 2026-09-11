@@ -275,6 +275,20 @@ def extract_document(doc_id: str, files: list[Path]) -> dict:
             "confidence": scoring, "token_usage": usage, "raw_text_excerpt": text[:500]}
 
 
+def review_reasons_for(r: dict) -> list[str]:
+    """Shared by run_batch() below and main.py's single-document endpoints
+    (POST /extract/sample/{doc_id}, POST /extract) -- module-level rather
+    than a closure so both call sites compute "why is this flagged" the
+    same way instead of main.py reimplementing it."""
+    if r.get("extraction_failed"):
+        return [f"extraction failed: {r.get('failure_reason', 'unknown')}"]
+    return r.get("confidence", {}).get("review_reasons", [])
+
+
+def needs_review(r: dict) -> bool:
+    return bool(r.get("extraction_failed") or r.get("confidence", {}).get("needs_review"))
+
+
 def run_batch() -> dict:
     documents = discover_documents()
     results = {}
@@ -292,13 +306,7 @@ def run_batch() -> dict:
                                 "failure_reason": f"{type(e).__name__}: {e}", "token_usage": {}}
         (OUTPUT_DIR / f"{doc_id}.json").write_text(json.dumps(results[doc_id], indent=2))
 
-    def _review_reasons(r):
-        if r.get("extraction_failed"):
-            return [f"extraction failed: {r.get('failure_reason', 'unknown')}"]
-        return r.get("confidence", {}).get("review_reasons", [])
-
-    review_queue = {doc_id: _review_reasons(r) for doc_id, r in results.items()
-                     if r.get("extraction_failed") or r.get("confidence", {}).get("needs_review")}
+    review_queue = {doc_id: review_reasons_for(r) for doc_id, r in results.items() if needs_review(r)}
     total_prompt_tokens = sum(r.get("token_usage", {}).get("input_tokens", 0) for r in results.values())
     total_completion_tokens = sum(r.get("token_usage", {}).get("output_tokens", 0) for r in results.values())
 

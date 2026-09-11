@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MBCIE CAPA &amp; Document AI -- Demo Console</title>
+<style>
+  :root{
+    --bg:#f4f6f8; --panel:#ffffff; --border:#dde3e8; --border-soft:#e8ecf0;
+    --ink:#182430; --ink-soft:#5b6b7a; --ink-faint:#8b98a5;
+    --accent:#2f6f6d; --accent-ink:#ffffff; --accent-soft:#e4f1f0;
+    --ok:#2f7d4f; --ok-bg:#e6f4ea;
+    --warn:#a3690f; --warn-bg:#fbeed9;
+    --bad:#b3392f; --bad-bg:#fbe6e3;
+    --mono: "SF Mono", "Cascadia Code", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size:14px; line-height:1.5;
+  }
+  a{ color:var(--accent); }
+
+  header.topbar{
+    display:flex; align-items:center; gap:16px;
+    padding:12px 20px; background:var(--panel); border-bottom:1px solid var(--border);
+    position:sticky; top:0; z-index:20;
+  }
+  .brand{ display:flex; align-items:baseline; gap:10px; margin-right:auto; }
+  .brand h1{ font-size:16px; margin:0; font-weight:650; letter-spacing:-0.01em; }
+  .brand span{ font-size:12px; color:var(--ink-faint); }
+
+  .pill{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:12px; font-weight:600; padding:3px 9px; border-radius:99px;
+    border:1px solid transparent;
+  }
+  .pill.ok{ background:var(--ok-bg); color:var(--ok); }
+  .pill.bad{ background:var(--bad-bg); color:var(--bad); }
+  .pill.warn{ background:var(--warn-bg); color:var(--warn); }
+  .pill.neutral{ background:var(--border-soft); color:var(--ink-soft); }
+  .dot{ width:7px; height:7px; border-radius:50%; background:currentColor; flex:none; }
+
+  .auth-form{ display:flex; align-items:center; gap:6px; }
+  .auth-form input{
+    font-size:12.5px; padding:6px 8px; border:1px solid var(--border);
+    border-radius:6px; width:110px; background:#fff; color:var(--ink);
+  }
+  .auth-form input:focus{ outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  button{
+    font: inherit; font-size:12.5px; font-weight:600; cursor:pointer;
+    padding:6px 12px; border-radius:6px; border:1px solid var(--accent);
+    background:var(--accent); color:var(--accent-ink);
+  }
+  button:hover{ filter:brightness(1.07); }
+  button:disabled{ cursor:not-allowed; opacity:0.55; filter:none; }
+  button.secondary{ background:#fff; color:var(--accent); }
+  button.ghost{ background:transparent; color:var(--ink-soft); border-color:var(--border); }
+  button.small{ padding:4px 9px; font-size:11.5px; }
+
+  nav.tabs{
+    display:flex; gap:2px; padding:0 20px; background:var(--panel);
+    border-bottom:1px solid var(--border);
+  }
+  nav.tabs button.tab{
+    background:transparent; border:none; border-radius:0; color:var(--ink-soft);
+    padding:11px 4px; margin-right:22px; font-size:13px; font-weight:600;
+    border-bottom:2px solid transparent;
+  }
+  nav.tabs button.tab.active{ color:var(--accent); border-bottom-color:var(--accent); }
+  nav.tabs button.tab:hover{ color:var(--ink); filter:none; }
+
+  main{ max-width:1180px; margin:0 auto; padding:20px; }
+  .gate{
+    max-width:520px; margin:60px auto; background:var(--panel); border:1px solid var(--border);
+    border-radius:10px; padding:28px 30px;
+  }
+  .gate h2{ margin-top:0; font-size:17px; }
+  .gate p{ color:var(--ink-soft); font-size:13px; }
+  .gate .auth-form{ margin-top:16px; flex-wrap:wrap; }
+  .gate .auth-form input{ width:100%; }
+  .gate .row{ display:flex; flex-direction:column; gap:5px; flex:1 1 200px; }
+  .gate .row label{ font-size:11.5px; font-weight:600; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.03em; }
+
+  .grid{ display:grid; grid-template-columns: 300px 1fr; gap:16px; align-items:start; }
+  @media (max-width: 860px){ .grid{ grid-template-columns: 1fr; } }
+
+  .panel{
+    background:var(--panel); border:1px solid var(--border); border-radius:10px;
+    padding:16px 18px; margin-bottom:16px;
+  }
+  .panel > h3{ margin:0 0 4px; font-size:13px; font-weight:650; }
+  .panel > p.hint{ margin:0 0 12px; font-size:12px; color:var(--ink-faint); }
+
+  select, input[type=text]{
+    width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:7px;
+    background:#fff; color:var(--ink); font-size:13px; font-family:inherit;
+  }
+  label.field-label{ display:block; font-size:11.5px; font-weight:600; color:var(--ink-soft);
+    text-transform:uppercase; letter-spacing:.03em; margin:0 0 6px; }
+  .stack{ display:flex; flex-direction:column; gap:12px; }
+  .row-inline{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+
+  .complaint-card{
+    border:1px solid var(--border-soft); border-radius:8px; padding:10px 12px;
+    font-size:12.5px; color:var(--ink-soft); background:#fbfcfd; margin-top:4px;
+  }
+  .complaint-card b{ color:var(--ink); }
+
+  .empty{
+    color:var(--ink-faint); font-size:13px; text-align:center; padding:30px 10px;
+    border:1px dashed var(--border); border-radius:8px;
+  }
+
+  .spinner{
+    width:14px; height:14px; border-radius:50%;
+    border:2px solid rgba(255,255,255,.4); border-top-color:#fff;
+    animation:spin .7s linear infinite; display:inline-block; vertical-align:-2px;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .elapsed{ font-size:11.5px; color:var(--ink-faint); font-variant-numeric:tabular-nums; }
+
+  .banner{
+    border-radius:8px; padding:10px 14px; font-size:12.5px; margin-bottom:14px;
+    border:1px solid; display:flex; gap:8px; align-items:flex-start;
+  }
+  .banner.bad{ background:var(--bad-bg); border-color:#eec5c0; color:var(--bad); }
+  .banner.warn{ background:var(--warn-bg); border-color:#f0d9ad; color:var(--warn); }
+
+  .result-head{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
+  .result-head h4{ margin:0; font-size:14px; }
+
+  .score-grid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin:10px 0 4px; }
+  @media (max-width: 700px){ .score-grid{ grid-template-columns:repeat(2, 1fr); } }
+  .score-tile{
+    border:1px solid var(--border-soft); border-radius:8px; padding:10px 12px; background:#fbfcfd;
+  }
+  .score-tile .label{ font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-faint); font-weight:650; }
+  .score-tile .value{ font-size:19px; font-weight:650; font-variant-numeric:tabular-nums; margin-top:2px; }
+  .bar-track{ height:5px; border-radius:99px; background:var(--border-soft); margin-top:7px; overflow:hidden; }
+  .bar-fill{ height:100%; border-radius:99px; background:var(--accent); }
+
+  table{ width:100%; border-collapse:collapse; font-size:12.5px; }
+  th, td{ text-align:left; padding:7px 9px; border-bottom:1px solid var(--border-soft); vertical-align:top; }
+  th{ font-size:10.5px; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-faint); font-weight:650; }
+  td.num{ font-variant-numeric:tabular-nums; text-align:right; }
+  th.num{ text-align:right; }
+  .table-wrap{ overflow-x:auto; border:1px solid var(--border-soft); border-radius:8px; }
+  .table-wrap table{ margin:0; }
+  .table-wrap th:first-child, .table-wrap td:first-child{ padding-left:12px; }
+
+  .kv{ display:grid; grid-template-columns:130px 1fr; gap:4px 10px; font-size:12.5px; }
+  .kv dt{ color:var(--ink-faint); }
+  .kv dd{ margin:0; }
+
+  details.step{
+    border:1px solid var(--border-soft); border-radius:8px; margin-bottom:6px; background:#fbfcfd;
+  }
+  details.step summary{
+    padding:8px 12px; cursor:pointer; font-size:12.5px; display:flex; gap:8px; align-items:center;
+    list-style:none;
+  }
+  details.step summary::-webkit-details-marker{ display:none; }
+  details.step summary .step-no{
+    font-variant-numeric:tabular-nums; color:var(--ink-faint); font-family:var(--mono); font-size:11px;
+  }
+  details.step summary .tool-name{ font-family:var(--mono); font-weight:650; color:var(--accent); }
+  details.step pre{
+    margin:0; padding:10px 12px; border-top:1px solid var(--border-soft);
+    font-family:var(--mono); font-size:11.5px; white-space:pre-wrap; word-break:break-word;
+    max-height:220px; overflow:auto; background:#f6f8f9;
+  }
+
+  code.mono{ font-family:var(--mono); font-size:12px; background:var(--border-soft); padding:1px 5px; border-radius:4px; }
+
+  .drop{
+    border:1.5px dashed var(--border); border-radius:8px; padding:18px 12px; text-align:center;
+    font-size:12.5px; color:var(--ink-faint); cursor:pointer;
+  }
+  .drop.drag{ border-color:var(--accent); background:var(--accent-soft); color:var(--accent); }
+  .file-chip{
+    display:inline-flex; align-items:center; gap:6px; font-size:12px; background:var(--border-soft);
+    border-radius:6px; padding:4px 8px; margin:3px 4px 0 0;
+  }
+  .file-chip button{ padding:0 4px; border:none; background:transparent; color:var(--ink-faint); font-size:13px; }
+
+  footer{ text-align:center; padding:24px 20px 40px; color:var(--ink-faint); font-size:11.5px; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <h1>MBCIE CAPA &amp; Document AI</h1>
+    <span>Demo console -- calls the live FastAPI service directly</span>
+  </div>
+  <span id="healthPill" class="pill neutral"><span class="dot"></span>checking API...</span>
+  <div id="authArea"></div>
+</header>
+
+<nav class="tabs" id="tabs" hidden>
+  <button class="tab active" data-tab="task1">Task 1 -- Root-Cause Investigation</button>
+  <button class="tab" data-tab="task2">Task 2 -- Document Extraction</button>
+</nav>
+
+<main id="main">
+
+  <div id="gate" class="gate">
+    <h2>Connect to the API</h2>
+    <p>Enter the Basic Auth credentials from your <code class="mono">.env</code>
+       (<code class="mono">BASIC_AUTH_USERNAME</code> / <code class="mono">BASIC_AUTH_PASSWORD</code>).
+       Nothing is sent anywhere except this API, running on this machine.</p>
+    <div class="auth-form" style="flex-direction:column; align-items:stretch; gap:12px;">
+      <div class="row-inline" style="gap:12px;">
+        <div class="row">
+          <label>Username</label>
+          <input type="text" id="gateUser" value="reviewer" autocomplete="username">
+        </div>
+        <div class="row">
+          <label>Password</label>
+          <input type="text" id="gatePass" placeholder="changeme" autocomplete="current-password">
+        </div>
+      </div>
+      <button id="connectBtn" style="align-self:flex-start;">Connect</button>
+      <div id="gateError"></div>
+    </div>
+  </div>
+
+  <div id="task1" class="tab-panel" hidden>
+    <div class="grid">
+      <div>
+        <div class="panel">
+          <h3>Complaints</h3>
+          <p class="hint">Pulled live from <code class="mono">GET /complaints</code>.</p>
+          <div class="stack">
+            <select id="complaintSelect"></select>
+            <div id="complaintPreview" class="complaint-card" hidden></div>
+            <button id="investigateBtn" disabled>Run investigation</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Type your own complaint</h3>
+          <p class="hint">Not limited to the fixture dataset -- investigates against the same downtime/shift history a new real complaint would.</p>
+          <div class="stack">
+            <div>
+              <label class="field-label">Batch code *</label>
+              <input type="text" id="adhocBatch" placeholder="M02-2026W13">
+            </div>
+            <div>
+              <label class="field-label">Defect description *</label>
+              <input type="text" id="adhocDesc" placeholder="Sidewall cracking observed after short mileage...">
+            </div>
+            <div class="row-inline">
+              <div style="flex:1 1 120px;">
+                <label class="field-label">Severity</label>
+                <input type="text" id="adhocSeverity" placeholder="high">
+              </div>
+              <div style="flex:1 1 120px;">
+                <label class="field-label">Product line</label>
+                <input type="text" id="adhocProduct" placeholder="tyre">
+              </div>
+            </div>
+            <p class="hint" style="margin:0;">Batch code must match <code class="mono">M##-YYYYW##</code> and reference a machine/week the dataset has records for, or the agent will honestly return "Insufficient evidence" -- try e.g. <code class="mono">M02-2026W13</code>.</p>
+            <button id="adhocInvestigateBtn">Investigate this complaint</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="row-inline" style="justify-content:space-between;">
+            <h3 style="margin:0;">Review queue</h3>
+            <button class="ghost small" id="refreshQueue1">Refresh</button>
+          </div>
+          <p class="hint">Complaints whose most recent investigation needs human sign-off.</p>
+          <div id="queue1Body"><div class="empty">Loading...</div></div>
+        </div>
+      </div>
+
+      <div>
+        <div id="t1Status"></div>
+        <div id="t1Result"><div class="empty">Pick a complaint on the left and run an investigation to see results here.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="task2" class="tab-panel" hidden>
+    <div class="grid">
+      <div>
+        <div class="panel">
+          <h3>Sample documents</h3>
+          <p class="hint">10 fixture invoices/POs (mixed digital + scanned).</p>
+          <div class="stack">
+            <select id="docSelect"></select>
+            <button id="extractSampleBtn" disabled>Extract this document</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Upload your own</h3>
+          <p class="hint">A single PDF, or several page images for one scanned document.</p>
+          <div class="stack">
+            <div class="drop" id="dropZone">Drop file(s) here, or click to choose<br>PDF, JPG, PNG</div>
+            <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" multiple hidden>
+            <div id="fileList"></div>
+            <button id="extractUploadBtn" disabled>Extract upload</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="row-inline" style="justify-content:space-between;">
+            <h3 style="margin:0;">Review queue</h3>
+            <button class="ghost small" id="refreshQueue2">Refresh</button>
+          </div>
+          <p class="hint">Documents flagged low-confidence instead of guessed.</p>
+          <div id="queue2Body"><div class="empty">Loading...</div></div>
+        </div>
+      </div>
+
+      <div>
+        <div id="t2Status"></div>
+        <div id="t2Result"><div class="empty">Pick a sample document or upload one, then extract it to see results here.</div></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>MBCIE AI Engineer Assessment -- demo console, talks to <code class="mono">/health</code>, <code class="mono">/investigate</code>, <code class="mono">/extract</code> and the review-queue endpoints on this same origin.</footer>
+
+<script>
+(() => {
+  "use strict";
+
+  const state = { user: "", pass: "", authed: false };
+
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const fmtPct = (n) => (n === null || n === undefined) ? "--" : Math.round(n * 100) + "%";
+
+  function authHeader() {
+    return "Basic " + btoa(state.user + ":" + state.pass);
+  }
+
+  async function api(path, opts = {}) {
+    const headers = Object.assign({ "Authorization": authHeader() }, opts.headers || {});
+    const res = await fetch(path, Object.assign({}, opts, { headers }));
+    let body = null;
+    try { body = await res.json(); } catch (e) { /* no body */ }
+    if (!res.ok) {
+      const detail = (body && body.detail) ? body.detail : (res.status + " " + res.statusText);
+      const err = new Error(detail);
+      err.status = res.status;
+      throw err;
+    }
+    return body;
+  }
+
+  // ---- health check (unauthenticated) ------------------------------------
+  async function checkHealth() {
+    const pill = $("healthPill");
+    try {
+      const res = await fetch("/health");
+      if (res.ok) {
+        pill.className = "pill ok";
+        pill.innerHTML = "<span class='dot'></span>API online";
+      } else {
+        throw new Error("unhealthy");
+      }
+    } catch (e) {
+      pill.className = "pill bad";
+      pill.innerHTML = "<span class='dot'></span>API unreachable -- is uvicorn running?";
+    }
+  }
+
+  // ---- auth gate -----------------------------------------------------------
+  function renderAuthArea() {
+    const el = $("authArea");
+    if (!state.authed) { el.innerHTML = ""; return; }
+    el.innerHTML = `<span class="pill neutral"><span class="dot"></span>${esc(state.user)}</span>
+      <button class="ghost small" id="logoutBtn">Sign out</button>`;
+    $("logoutBtn").onclick = () => {
+      state.authed = false; state.user = ""; state.pass = "";
+      sessionStorage.removeItem("mbcie_creds");
+      $("gate").hidden = false; $("tabs").hidden = true;
+      $("task1").hidden = true; $("task2").hidden = true;
+      renderAuthArea();
+    };
+  }
+
+  async function tryConnect(user, pass) {
+    state.user = user; state.pass = pass;
+    $("gateError").innerHTML = "";
+    try {
+      await api("/complaints");
+      state.authed = true;
+      sessionStorage.setItem("mbcie_creds", JSON.stringify({ user, pass }));
+      $("gate").hidden = true;
+      $("tabs").hidden = false;
+      $("task1").hidden = false;
+      renderAuthArea();
+      loadComplaints();
+      loadDocs();
+      loadQueue1();
+      loadQueue2();
+    } catch (e) {
+      state.authed = false;
+      $("gateError").innerHTML = `<div class="banner bad">${e.status === 401 ? "Invalid credentials." : "Could not reach the API: " + esc(e.message)}</div>`;
+    }
+  }
+
+  $("connectBtn").onclick = () => tryConnect($("gateUser").value.trim(), $("gatePass").value);
+  [$("gateUser"), $("gatePass")].forEach(el => el.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") $("connectBtn").click();
+  }));
+
+  // ---- tabs ------------------------------------------------------------
+  document.querySelectorAll("button.tab").forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll("button.tab").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const target = btn.dataset.tab;
+      $("task1").hidden = target !== "task1";
+      $("task2").hidden = target !== "task2";
+    };
+  });
+
+  // ================= TASK 1 =================================================
+  let complaintsCache = [];
+
+  async function loadComplaints() {
+    const sel = $("complaintSelect");
+    try {
+      const data = await api("/complaints");
+      complaintsCache = data.complaint_ids || [];
+      sel.innerHTML = complaintsCache.map(id => `<option value="${esc(id)}">${esc(id)}</option>`).join("");
+      $("investigateBtn").disabled = complaintsCache.length === 0;
+      sel.onchange();
+    } catch (e) {
+      sel.innerHTML = "<option>Failed to load</option>";
+    }
+  }
+
+  $("complaintSelect").onchange = () => {
+    // We don't have a single-complaint fetch endpoint, so pull from /complaints
+    // list context isn't enough for full text -- show the id, the full record
+    // shows up once an investigation runs and returns "complaint" in the result.
+    $("complaintPreview").hidden = true;
+  };
+
+  async function runInvestigation(label, callFn) {
+    const buttons = [$("investigateBtn"), $("adhocInvestigateBtn")];
+    buttons.forEach(b => b.disabled = true);
+    const start = Date.now();
+    $("t1Status").innerHTML = `<div class="banner warn"><span class="spinner"></span>&nbsp;Investigating ${esc(label)}... this calls a real LLM across up to a few tool-call turns, plus a possible verification retry -- typically 5-40s. <span class="elapsed" id="t1Elapsed"></span></div>`;
+    const timer = setInterval(() => {
+      $("t1Elapsed").textContent = ((Date.now() - start) / 1000).toFixed(1) + "s elapsed";
+    }, 200);
+    $("t1Result").innerHTML = "";
+    try {
+      const result = await callFn();
+      $("t1Status").innerHTML = "";
+      renderInvestigation(result);
+      loadQueue1();
+    } catch (e) {
+      $("t1Status").innerHTML = `<div class="banner bad">Investigation failed: ${esc(e.message)}</div>`;
+    } finally {
+      clearInterval(timer);
+      buttons.forEach(b => b.disabled = false);
+    }
+  }
+
+  $("investigateBtn").onclick = () => {
+    const id = $("complaintSelect").value;
+    if (!id) return;
+    runInvestigation(id, () => api(`/investigate/${encodeURIComponent(id)}`, { method: "POST" }));
+  };
+
+  $("adhocInvestigateBtn").onclick = () => {
+    const batch_code = $("adhocBatch").value.trim();
+    const defect_description = $("adhocDesc").value.trim();
+    if (!batch_code || !defect_description) {
+      $("t1Status").innerHTML = `<div class="banner bad">Batch code and defect description are both required.</div>`;
+      return;
+    }
+    const body = { batch_code, defect_description };
+    const severity = $("adhocSeverity").value.trim();
+    const product_line = $("adhocProduct").value.trim();
+    if (severity) body.severity = severity;
+    if (product_line) body.product_line = product_line;
+    runInvestigation(`"${batch_code}"`, () => api("/investigate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }));
+  };
+
+  function renderInvestigation(r) {
+    const c = r.conclusion || {};
+    const cs = r.confidence_score || {};
+    const reviewBadge = r.needs_human_review
+      ? `<span class="pill warn"><span class="dot"></span>Flagged for human review</span>`
+      : `<span class="pill ok"><span class="dot"></span>No review needed</span>`;
+    const failBadge = r.conclusion_failed ? `<span class="pill bad"><span class="dot"></span>conclusion_failed</span>` : "";
+    const matBadge = r.material_verification_failed ? `<span class="pill bad"><span class="dot"></span>material_verification_failed</span>` : "";
+
+    const complaint = r.complaint || {};
+
+    const scoreTile = (label, val) => `
+      <div class="score-tile">
+        <div class="label">${esc(label)}</div>
+        <div class="value">${val === undefined || val === null ? "--" : val}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.max(0, Math.min(1, val || 0)) * 100}%"></div></div>
+      </div>`;
+
+    const reasons = (r.review_reasons || []).map(x => `<li>${esc(x)}</li>`).join("") || "<li>--</li>";
+
+    const chainSteps = (r.evidence_chain || []).map(step => {
+      let resultPretty = step.result;
+      try { resultPretty = JSON.stringify(JSON.parse(step.result), null, 2); } catch (e) {}
+      return `<details class="step">
+        <summary><span class="step-no">#${step.step}</span> <span class="tool-name">${esc(step.tool)}</span>
+          <span style="color:var(--ink-faint); font-family:var(--mono); font-size:11px;">(${esc(JSON.stringify(step.args))})</span></summary>
+        <pre>${esc(resultPretty)}</pre>
+      </details>`;
+    }).join("") || "<div class='empty'>No tool calls recorded.</div>";
+
+    const verLog = (r.verification_log || []).map((v, i) =>
+      `<details class="step"><summary><span class="step-no">retry ${i + 1}</span></summary><pre>${esc(JSON.stringify(v, null, 2))}</pre></details>`
+    ).join("");
+
+    $("t1Result").innerHTML = `
+      <div class="panel">
+        <div class="result-head">
+          <h4>${esc(r.complaint_id)} &middot; ${esc(c.root_cause_category || "--")}</h4>
+          ${reviewBadge} ${failBadge} ${matBadge}
+        </div>
+        ${complaint.defect_description ? `
+        <div class="complaint-card">
+          <b>${esc(complaint.batch_code || "")}</b> &middot; ${esc(complaint.product_line || "")} &middot; severity: ${esc(complaint.severity || "")}<br>
+          ${esc(complaint.defect_description)}
+        </div>` : ""}
+        <p style="margin:14px 0 4px; font-size:13px;"><b>Hypothesis</b></p>
+        <p style="margin:0 0 10px; font-size:13px; color:var(--ink-soft);">${esc(c.root_cause_hypothesis || "--")}</p>
+        <p style="margin:14px 0 4px; font-size:13px;"><b>Recommended corrective action</b></p>
+        <p style="margin:0; font-size:13px; color:var(--ink-soft);">${esc(c.recommended_corrective_action || "--")}</p>
+
+        <p style="margin:16px 0 4px; font-size:13px;"><b>Confidence score</b> <span style="color:var(--ink-faint); font-weight:400;">(weighted -- not the model's self-reported confidence)</span></p>
+        <div class="score-grid">
+          ${scoreTile("Overall", cs.score)}
+          ${scoreTile("Verification", cs.verification_signal)}
+          ${scoreTile("Category prior", cs.category_signal)}
+          ${scoreTile("Citation", cs.citation_signal)}
+        </div>
+
+        ${r.review_reasons && r.review_reasons.length ? `
+        <p style="margin:16px 0 4px; font-size:13px;"><b>Why flagged</b></p>
+        <ul style="margin:0; padding-left:18px; font-size:12.5px; color:var(--ink-soft);">${reasons}</ul>` : ""}
+
+        <div class="kv" style="margin-top:16px;">
+          <dt>steps used</dt><dd>${esc(r.steps_used ?? "--")}</dd>
+          <dt>verification retries</dt><dd>${(r.verification_log || []).length}</dd>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Evidence chain</h3>
+        <p class="hint">Every investigation tool call this run made, in order, with its exact result.</p>
+        ${chainSteps}
+      </div>
+
+      ${verLog ? `<div class="panel"><h3>Verification retries</h3><p class="hint">Mechanical citation checks that failed and were corrected.</p>${verLog}</div>` : ""}
+    `;
+  }
+
+  async function loadQueue1() {
+    try {
+      const data = await api("/investigate/review-queue");
+      renderQueue($("queue1Body"), data.review_queue, ["complaint", "category", "score", "reasons", "when"], (id, item) => `
+        <tr>
+          <td><code class="mono">${esc(id)}</code></td>
+          <td>${esc(item.root_cause_category)}</td>
+          <td class="num">${item.confidence_score ? item.confidence_score.score : "--"}</td>
+          <td>${esc((item.review_reasons || []).join("; "))}</td>
+          <td>${esc((item.investigated_at || "").replace("T", " ").slice(0, 19))}</td>
+        </tr>`);
+    } catch (e) {
+      $("queue1Body").innerHTML = `<div class="banner bad">${esc(e.message)}</div>`;
+    }
+  }
+  $("refreshQueue1").onclick = loadQueue1;
+
+  function renderQueue(el, queue, cols, rowFn) {
+    const entries = Object.entries(queue || {});
+    if (entries.length === 0) {
+      el.innerHTML = `<div class="empty">Queue is empty -- nothing currently needs review.</div>`;
+      return;
+    }
+    el.innerHTML = `<div class="table-wrap"><table>
+      <thead><tr>${cols.map(c => `<th${c === "score" ? " class='num'" : ""}>${c}</th>`).join("")}</tr></thead>
+      <tbody>${entries.map(([id, item]) => rowFn(id, item)).join("")}</tbody>
+    </table></div>`;
+  }
+
+  // ================= TASK 2 =================================================
+  async function loadDocs() {
+    const sel = $("docSelect");
+    try {
+      const data = await api("/documents");
+      sel.innerHTML = (data.doc_ids || []).map(id => `<option value="${esc(id)}">${esc(id)}</option>`).join("");
+      $("extractSampleBtn").disabled = (data.doc_ids || []).length === 0;
+    } catch (e) {
+      sel.innerHTML = "<option>Failed to load</option>";
+    }
+  }
+
+  $("extractSampleBtn").onclick = () => runExtraction(() =>
+    api(`/extract/sample/${encodeURIComponent($("docSelect").value)}`, { method: "POST" }));
+
+  let pendingFiles = [];
+  const dropZone = $("dropZone"), fileInput = $("fileInput");
+  dropZone.onclick = () => fileInput.click();
+  dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add("drag"); };
+  dropZone.ondragleave = () => dropZone.classList.remove("drag");
+  dropZone.ondrop = (e) => {
+    e.preventDefault(); dropZone.classList.remove("drag");
+    setFiles(Array.from(e.dataTransfer.files));
+  };
+  fileInput.onchange = () => setFiles(Array.from(fileInput.files));
+
+  function setFiles(files) {
+    pendingFiles = files;
+    $("fileList").innerHTML = files.map((f, i) =>
+      `<span class="file-chip">${esc(f.name)}<button data-i="${i}">×</button></span>`).join("");
+    $("fileList").querySelectorAll("button").forEach(b => b.onclick = () => {
+      pendingFiles.splice(Number(b.dataset.i), 1);
+      setFiles(pendingFiles);
+    });
+    $("extractUploadBtn").disabled = files.length === 0;
+  }
+
+  $("extractUploadBtn").onclick = () => runExtraction(() => {
+    const fd = new FormData();
+    pendingFiles.forEach(f => fd.append("files", f));
+    return api("/extract", { method: "POST", body: fd });
+  });
+
+  async function runExtraction(callFn) {
+    const buttons = [$("extractSampleBtn"), $("extractUploadBtn")];
+    buttons.forEach(b => b.disabled = true);
+    const start = Date.now();
+    $("t2Status").innerHTML = `<div class="banner warn"><span class="spinner"></span>&nbsp;Extracting... OCR (if scanned) + LLM structuring. <span class="elapsed" id="t2Elapsed"></span></div>`;
+    const timer = setInterval(() => {
+      $("t2Elapsed").textContent = ((Date.now() - start) / 1000).toFixed(1) + "s elapsed";
+    }, 200);
+    $("t2Result").innerHTML = "";
+    try {
+      const result = await callFn();
+      $("t2Status").innerHTML = "";
+      renderExtraction(result);
+      loadQueue2();
+    } catch (e) {
+      $("t2Status").innerHTML = `<div class="banner bad">Extraction failed: ${esc(e.message)}</div>`;
+    } finally {
+      clearInterval(timer);
+      buttons.forEach(b => b.disabled = pendingFiles.length === 0 && b.id === "extractUploadBtn" ? true : false);
+      $("extractSampleBtn").disabled = false;
+      $("extractUploadBtn").disabled = pendingFiles.length === 0;
+    }
+  }
+
+  function renderExtraction(r) {
+    const d = r.extracted || {};
+    const conf = r.confidence || {};
+    const reviewBadge = conf.needs_review
+      ? `<span class="pill warn"><span class="dot"></span>Flagged for human review</span>`
+      : `<span class="pill ok"><span class="dot"></span>No review needed</span>`;
+
+    const items = (d.line_items || []).map(li => `
+      <tr>
+        <td>${esc(li.description)}</td>
+        <td class="num">${li.quantity ?? "--"}</td>
+        <td class="num">${li.unit_price ?? "--"}</td>
+        <td class="num">${li.line_total ?? "--"}</td>
+      </tr>`).join("") || `<tr><td colspan="4" style="color:var(--ink-faint);">No line items extracted.</td></tr>`;
+
+    const scoreTile = (label, val, isBool) => {
+      const display = isBool ? (val ? "yes" : "no") : (val === undefined || val === null ? "--" : val);
+      const barVal = isBool ? (val ? 1 : 0) : val;
+      return `<div class="score-tile">
+        <div class="label">${esc(label)}</div>
+        <div class="value">${display}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.max(0, Math.min(1, barVal || 0)) * 100}%"></div></div>
+      </div>`;
+    };
+
+    $("t2Result").innerHTML = `
+      <div class="panel">
+        <div class="result-head">
+          <h4>${esc(r.doc_id)} &middot; ${esc(d.doc_type || "--")} &middot; ${esc(r.format || "")}</h4>
+          ${reviewBadge}
+        </div>
+        <div class="kv">
+          <dt>document no.</dt><dd>${esc(d.doc_number ?? "--")}</dd>
+          <dt>date</dt><dd>${esc(d.doc_date ?? "--")}</dd>
+          <dt>vendor</dt><dd>${esc(d.vendor_name ?? "--")}</dd>
+          <dt>buyer</dt><dd>${esc(d.buyer_name ?? "--")}</dd>
+          <dt>currency</dt><dd>${esc(d.currency ?? "--")}</dd>
+          <dt>subtotal</dt><dd>${d.subtotal ?? "--"}</dd>
+          <dt>tax</dt><dd>${d.tax_amount ?? "--"}</dd>
+          <dt>total</dt><dd><b>${d.total_amount ?? "--"}</b></dd>
+        </div>
+
+        <p style="margin:16px 0 4px; font-size:13px;"><b>Confidence</b></p>
+        <div class="score-grid">
+          ${scoreTile("Overall", conf.overall_confidence)}
+          ${scoreTile("Source", conf.source_confidence)}
+          ${scoreTile("Completeness", conf.completeness)}
+          ${scoreTile("Arithmetic OK", conf.arithmetic_consistent, true)}
+        </div>
+        ${conf.review_reasons && conf.review_reasons.length ? `
+        <p style="margin:16px 0 4px; font-size:13px;"><b>Why flagged</b></p>
+        <ul style="margin:0; padding-left:18px; font-size:12.5px; color:var(--ink-soft);">
+          ${conf.review_reasons.map(x => `<li>${esc(x)}</li>`).join("")}
+        </ul>` : ""}
+
+        ${r.token_usage ? `<div class="kv" style="margin-top:16px;">
+          <dt>input tokens</dt><dd>${esc(r.token_usage.input_tokens ?? "--")}</dd>
+          <dt>output tokens</dt><dd>${esc(r.token_usage.output_tokens ?? "--")}</dd>
+        </div>` : ""}
+      </div>
+
+      <div class="panel">
+        <h3>Line items</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Description</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Line total</th></tr></thead>
+          <tbody>${items}</tbody>
+        </table></div>
+      </div>
+    `;
+  }
+
+  async function loadQueue2() {
+    try {
+      const data = await api("/review-queue");
+      const q = data.review_queue || {};
+      renderQueue($("queue2Body"), q, ["doc", "reasons"], (id, item) => `
+        <tr>
+          <td><code class="mono">${esc(id)}</code></td>
+          <td>${esc(Array.isArray(item) ? item.join("; ") : JSON.stringify(item))}</td>
+        </tr>`);
+    } catch (e) {
+      $("queue2Body").innerHTML = `<div class="banner bad">${esc(e.message)}</div>`;
+    }
+  }
+  $("refreshQueue2").onclick = loadQueue2;
+
+  // ---- boot --------------------------------------------------------------
+  checkHealth();
+  setInterval(checkHealth, 15000);
+
+  try {
+    const saved = JSON.parse(sessionStorage.getItem("mbcie_creds") || "null");
+    if (saved && saved.user) {
+      $("gateUser").value = saved.user;
+      $("gatePass").value = saved.pass;
+      tryConnect(saved.user, saved.pass);
+    }
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>

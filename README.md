@@ -15,15 +15,27 @@ Two systems, one FastAPI service:
 > `experiment/per-category-investigator`, not `main`. Everything below --
 > the confidence scoring, the review queues, the ad-hoc complaint input,
 > the demo console -- was built after `main` was last updated, and lives
-> only on that branch. See [Limitations](#limitations) for why it wasn't
+> only on that branch. See [LIMITATIONS.md](LIMITATIONS.md) for why it wasn't
 > merged during the assessment window.
 
-## Quick start (aim: under 10 minutes)
+## Setup & running (aim: under 10 minutes)
+
+### Prerequisites
+
+- Python 3.10+
+- An OpenAI API key (or an OpenRouter API key -- either works, see step 3)
+- **Tesseract OCR** -- a system binary, not pip-installable; Task 2's
+  scanned-document path calls out to it:
+  - Windows: [UB-Mannheim's installer](https://github.com/UB-Mannheim/tesseract/wiki), then add it to `PATH`
+  - macOS: `brew install tesseract`
+  - Linux: `apt-get install tesseract-ocr`
+
+### 1. Clone and install
 
 ```bash
 git clone https://github.com/Devendra-git-acc/mbcie-capa_agent.git
 cd mbcie-capa_agent
-git checkout experiment/per-category-investigator
+git checkout experiment/per-category-investigator   # see the note at the top of this file
 
 python -m venv .venv
 .venv\Scripts\activate        # Windows
@@ -32,37 +44,64 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-Task 2 also needs the **Tesseract OCR binary** (not pip-installable --
-`pytesseract` just calls out to it):
-- Windows: [UB-Mannheim's installer](https://github.com/UB-Mannheim/tesseract/wiki), then add it to `PATH`
-- macOS: `brew install tesseract`
-- Linux: `apt-get install tesseract-ocr`
-
-Then:
+### 2. Configure environment
 
 ```bash
 cp .env.example .env
-# edit .env: set OPENAI_API_KEY (or switch LLM_PROVIDER=openrouter and set
-# OPENROUTER_API_KEY instead), and set BASIC_AUTH_PASSWORD to something
-# real rather than the placeholder
+```
 
+Edit `.env`:
+- `OPENAI_API_KEY` (or set `LLM_PROVIDER=openrouter` and fill in
+  `OPENROUTER_API_KEY` instead -- same code path either way, one line
+  flips it)
+- `BASIC_AUTH_USERNAME` / `BASIC_AUTH_PASSWORD` -- set a real password;
+  if left blank, `main.py` generates a random one at startup and prints
+  it to the console instead
+
+### 3. Run the API + demo console
+
+```bash
 uvicorn main:app --reload
 ```
 
 Open **http://127.0.0.1:8000/** -- it redirects to a demo console covering
-both tasks (see [Demo console](#demo-console-ui) below). Everything else
-lives behind Basic Auth (username/password from `.env`) except `/health`.
-Swagger docs at `/docs`.
+both tasks (see [Demo console](#demo-console-ui) below): pick or type a
+complaint for Task 1, pick a sample document or upload a real file for
+Task 2, both with live results and review queues. Everything except
+`/health` sits behind Basic Auth (the username/password from `.env`).
+Interactive API docs at `/docs`.
 
-If you'd rather not use a browser, `rca/run_single.py` and
-`extraction/pipeline.py` (`python pipeline.py`) both run standalone without
-the API layer at all.
+### 4. Run each task standalone (no API layer)
 
-**Docker**: a `Dockerfile`/`docker-compose.yml` exist (bundling Tesseract,
-running as non-root, with a healthcheck) but were never verified with a
-real `docker build` in this environment -- no Docker was available on the
-development machine. Treat it as unverified, not broken; the
-`pip install` path above is the tested route. See [Limitations](#limitations).
+```bash
+cd rca && python run_single.py          # investigate one fixture complaint from the command line
+cd extraction && python pipeline.py     # run_batch() over all 10 fixture documents
+```
+
+### 5. Run the tests (mock-based, no API calls, no cost)
+
+```bash
+cd rca && python test_agent.py && python tools.py && python validate_dataset.py
+cd extraction && python test_pipeline.py
+```
+
+### 6. Run the evaluation harness (real API calls, real cost)
+
+```bash
+cd rca
+python eval.py                                    # 3 runs/complaint against the tuned 18-complaint set
+python eval.py 5                                  # override the run count
+AGENT_IMPL=agent_per_category python eval.py       # evaluate the multi-agent experiment instead
+ANSWER_KEY=answer_key_unseen.json python eval.py   # evaluate against the held-out generalization set
+```
+
+### Docker (optional, unverified)
+
+A `Dockerfile`/`docker-compose.yml` exist (bundling Tesseract, running as
+non-root, with a healthcheck) but were never run with a real `docker
+build` in this environment -- no Docker was available on the development
+machine. Treat it as unverified, not broken; the `pip install` path above
+is the tested route. See [LIMITATIONS.md](LIMITATIONS.md).
 
 ---
 
@@ -156,15 +195,14 @@ retry loop, so a rejected finding was just discarded instead of corrected.
 Both fixed, and round 2 reached parity (100%, 54/54 runs). But on a
 genuinely held-out dataset the per-category design fell to 88.9%, with a
 specific, still-unexplained asymmetry -- the same storyline resolved
-correctly on one machine and incorrectly on another. That's honestly
-documented in `notes/per-category-experiment-results.md` as a real,
+correctly on one machine and incorrectly on another -- an honestly
 unresolved finding, not swept under the rug. Given that, and that the
 single-agent design is materially simpler to reason about, verify, and
 extend, it's what's exposed through the API. The multi-agent variant is
 kept as a working, evaluated experiment (`rca/agent_per_category.py`),
-not the shipped path -- see `notes/scaling-architecture.md` for when a
-real multi-agent split would earn its complexity (many more categories,
-enough that one prompt genuinely can't hold them all reliably).
+not the shipped path -- it would earn its complexity once there are
+enough categories that one prompt genuinely can't hold them all
+reliably, which isn't the case yet at four.
 
 **Why complaints don't have to already exist in the dataset.**
 `POST /investigate` accepts a fresh complaint -- just a `batch_code` and
@@ -296,7 +334,7 @@ investigations): **100% hit rate**, 0% `conclusion_failed`, 0%
 `material_verification_failed`, 100% `evidence_surfaced`. This run
 predates the confidence-scoring feature (no `human_review_rate` in that
 file) -- it wasn't re-run afterward given real API cost/time during the
-assessment window; see [Limitations](#limitations).
+assessment window; see [LIMITATIONS.md](LIMITATIONS.md).
 
 **Held-out generalization test** (`rca/answer_key_unseen.json` --
 18 *new* synthetic complaints, different machines, different weeks,
@@ -306,8 +344,8 @@ all held at 100%; Material fell to 50%, with a specific, reproducible,
 still-unexplained asymmetry -- the same cross-machine storyline resolved
 correctly on one machine pair and incorrectly on another, ruled out as
 either a data-generation bug or a retrieval failure (both checked
-directly) before being accepted as a genuine reasoning gap. Documented in
-full in `notes/per-category-experiment-results.md`.
+directly) before being accepted as a genuine reasoning gap -- see
+[LIMITATIONS.md](LIMITATIONS.md) for where this stands.
 
 ---
 
@@ -339,105 +377,14 @@ main.py                     FastAPI app -- both tasks, Basic Auth, the demo cons
 static/index.html           the demo console
 shared/config.py            shared auth config
 
-notes/                       design discussion and process documentation, not required by the brief
-  engineering-journal.md          full narrative of every issue found and fixed, in order
-  per-category-experiment-results.md   the multi-agent experiment's results in detail
-  scaling-architecture.md         what this would look like with far more tools/data sources
-  production-readiness-agentic.md What's left for real production, agent-specific and general
-  demo-video-script.md            script used to record the submission demo video
+README.md                   this file
+LIMITATIONS.md              honest account of what's incomplete and what I'd do with more time
 ```
 
 ---
 
 ## Limitations
 
-Honest account of what's incomplete and what I'd do differently with more
-time, rather than presenting this as more finished than it is.
-
-**Non-determinism is handled offline, not in production.** `eval.py`
-proved this agent isn't fully deterministic even at `temperature=0` (the
-same complaint produced different categories across runs). The eval
-harness accounts for that by sampling 3 times; the live API doesn't --
-`POST /investigate` returns whatever one sample happens to produce. With
-more time, I'd add self-consistency voting (run N samples, take the
-majority, treat disagreement itself as a review-trigger) at least for
-borderline-confidence cases, rather than only measuring the problem
-offline and not mitigating it live.
-
-**Grounding verification is uniform in *format*, not in *rigor*.**
-`_verify_material_citation()` is a genuine mechanical check -- it looks up
-the cited complaint IDs and confirms they're real, cross-machine,
-matching-symptom evidence. The `citation_signal` used for every *other*
-category only checks that *something shaped like* a record ID appears in
-the hypothesis text -- it doesn't confirm that ID was actually returned by
-a tool call this run. A fabricated-but-plausible ID would currently score
-the same as a real one outside Material. Generalizing the Material
-verifier's actual grounding check to every category is the single highest-value
-fix I'd make next.
-
-**The held-out Material asymmetry is open, not resolved.** 88.9% on
-genuinely unseen data, with one specific, reproducible failure I could not
-fully explain -- see above. I'd want more held-out storylines specifically
-targeting that asymmetry before trusting Material's real-world reliability
-at the same level as the other three categories.
-
-**No memory across investigations, by design, but worth being explicit
-about the tradeoff.** Cross-complaint pattern-finding (recurrence,
-cross-machine defects) is handled by deterministic tool queries over the
-full dataset, not by the agent recalling past investigations -- this is
-more reliable at the current scale (36 complaints) than an LLM-memory
-layer would be. It stops being the right call once volume outgrows what
-structured filtering handles well; at that point a semantic/vector memory
-over resolved CAPAs becomes worth its cost. Not needed yet, but not free
-forever either -- discussed further in `notes/production-readiness-agentic.md`.
-
-**The review queues are read, not resolved.** Both `GET /investigate/review-queue`
-and `GET /review-queue` tell you what's flagged; there's no endpoint yet
-for a human to record a decision (approve/override + why). For a CAPA
-process specifically, that decision trail -- who reviewed what, and why --
-is the actual artifact an audit would ask for, not just the AI's own
-output. Designing that properly means pausing the LangGraph run itself
-before finalizing a flagged conclusion (via LangGraph's checkpointer/
-`interrupt_before`) rather than flagging after the fact, which I didn't
-have time to build.
-
-**No structured logging or persisted reasoning trace.** Right now,
-diagnosing what happened during a specific past investigation means
-either reading whatever `print()` output was on screen when it ran, or
-re-running it -- and a re-run isn't guaranteed to reproduce the same
-result, given the non-determinism already discussed above.
-`evidence_chain` and `verification_log` are returned in each response,
-but nothing persists them centrally or makes them queryable afterward
-(e.g. "show me every investigation last week that called
-`query_complaints_by_machine` more than twice," or "what did the agent
-actually see before concluding X on this complaint two days ago"). With
-more time I'd replace the `print()` calls with structured logging
-carrying a correlation ID per request, and either wire in LangSmith
-(close to free here, since this is already LangGraph -- one env var) or
-at minimum persist each run's full message history to a queryable store,
-rather than treating the response body as the only record of what
-happened. Covered in more depth, with concrete options, in
-`notes/production-readiness-agentic.md`.
-
-**Docker is unverified.** No Docker was available in the development
-environment, so the `Dockerfile`/`docker-compose.yml` were written
-carefully but never actually run. I'd verify this before calling it a
-real deployment option rather than a best-effort one.
-
-**`main` is stale relative to this branch.** All of the work described in
-this README -- confidence scoring, both review queues, ad-hoc complaint
-input, the demo console -- happened after `main` was last updated and
-lives only on `experiment/per-category-investigator`. I'd normally merge
-before calling something done; I kept them separate here so the original,
-simpler baseline stays easy to diff against everything that came after it,
-but a reviewer who only looks at `main` will see a materially earlier
-version of this project.
-
-**No production hardening beyond what the brief asked for.** No rate
-limiting, no TLS termination (this app shouldn't hold certs itself
-anyway), no per-user accounts (Basic Auth is one shared credential), no
-CI pipeline running the test suite or `eval.py` automatically.
-None of this was in scope for a 3-day prototype, but it's the honest gap
-between "working prototype" and "something I'd put in front of real
-plant data" -- covered in much more depth, with concrete mitigation
-approaches for each, in `notes/production-readiness-agentic.md`.
+See **[LIMITATIONS.md](LIMITATIONS.md)** -- an honest account of what's
+incomplete in this submission and what I'd do differently with more time,
+kept as a separate document rather than folded in here.
